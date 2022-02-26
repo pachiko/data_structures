@@ -1,7 +1,10 @@
 package game2048;
 
 import java.util.Formatter;
+import java.util.Iterator;
 import java.util.Observable;
+
+import static java.lang.Integer.valueOf;
 
 
 /** The state of a game of 2048.
@@ -107,16 +110,63 @@ public class Model extends Observable {
      *    and the trailing tile does not.
      * */
     public boolean tilt(Side side) {
-        boolean changed;
-        changed = false;
+        boolean changed = false;
 
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        board.setViewingPerspective(side);
+
+        for (int i = 0; i < board.size(); i++) {
+            changed = moveColumn(i) || changed ;
+        }
 
         checkGameOver();
         if (changed) {
             setChanged();
+        }
+
+        board.setViewingPerspective(Side.NORTH);
+
+        return changed;
+    }
+
+    /** Moves a given column along the up-direction
+     *  Also updates score if merging.
+     *  Returns true if there was a merge.
+     */
+    public boolean moveColumn(int c) {
+        boolean changed = false;
+        boolean wasMerged = false; // was the target tile merged earlier?
+
+        int rt = board.size() - 1; // target tile
+
+        for (int r = board.size() - 2; r >= 0; r--) {
+            Tile t = board.tile(c, r);
+
+            if (t != null) {
+                Tile n = board.tile(c, rt);
+
+                if (n == null) { // Empty tile at target
+                    board.move(c, rt, t);
+                    changed = true;
+                    wasMerged = false;
+                } else { // Has target tile
+                    if (!wasMerged && n.value() == t.value()) { // Merge
+                        board.move(c, rt, t);
+                        changed = true;
+                        wasMerged = true;
+                        score += n.value() * 2;
+                    } else { // Cannot merge
+                        if (rt - r > 1) {
+                            board.move(c, rt - 1, t); // should be empty space in-between
+                            changed = true;
+                        }
+                        wasMerged = false;
+                        rt--;
+                    }
+                }
+            }
         }
         return changed;
     }
@@ -137,7 +187,9 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        for (Tile t : b) {
+            if (t == null) return true;
+        }
         return false;
     }
 
@@ -147,8 +199,60 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        for (Tile t : b) {
+            if (t != null) {
+                if (t.value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
+    }
+
+    /**
+     * Returns true if any of the 4 neighbors can merge with this tile
+     * (ie same value).
+     */
+    public static boolean sameNeighborExists(Board b, Tile t) {
+        int r = t.row();
+        int c = t.col();
+        int val = t.value();
+
+        for (int k = 0 ; k < 2; k++) {
+            for (int i = -1; i < 2; i += 2) {
+                boolean vertical = (k%2 == 0);
+                int nr = vertical? r + i: r;
+                int nc = vertical? c : c + i;
+
+                if (!validRowColumnIndex(b, nr, nc)) {
+                    continue;
+                }
+                Tile n = b.tile(nc, nr);
+
+                if (n != null) {
+                    if (n.value() == val) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the row and column index is within the bounds of the board.
+     * Assumes board is always square.
+     */
+    private static boolean validRowColumnIndex(Board b, int r, int c) {
+        return validIndex(b, r) && validIndex(b, c);
+    }
+
+    /**
+     * Returns true if the index is within the bounds of the board.
+     * Assumes board is always square.
+     */
+    private static boolean validIndex(Board b, int i) {
+        return i >= 0 && i < b.size();
     }
 
     /**
@@ -158,7 +262,12 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        if (emptySpaceExists(b)) return true;
+        for (Tile t : b) {
+            if (sameNeighborExists(b, t)) {
+                return true;
+            }
+        }
         return false;
     }
 
