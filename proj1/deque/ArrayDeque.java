@@ -165,6 +165,6 @@ public class ArrayDeque<T> {
      */
     public T get(int index) {
         if (index > size - 1 || index < 0) return null;
-        return array[index + incWrapAround(nextFirst)];
+        return array[(incWrapAround(nextFirst) + index)%array.length];
     }
 }

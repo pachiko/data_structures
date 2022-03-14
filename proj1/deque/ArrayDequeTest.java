@@ -141,57 +141,122 @@ public class ArrayDequeTest {
 
             switch (k) {
                 case 0:
-                    for (int i = 500; i < 1000; i++) { // 500 - 999
+                    for (int i = 500000; i < 1000000; i++) { // 500k - 999k
                         ad1.addLast(i);
                     }
-                    for (int i = 499; i >= 0; i--) { // 499 - 0
+                    for (int i = 499999; i >= 0; i--) { // 499k - 0
                         ad1.addFirst(i);
                     }
                     break;
                 case 1:
-                    for (int i = 0; i < 1000; i++) { // 0 - 999
+                    for (int i = 0; i < 1000000; i++) { // 0 - 999k
                         ad1.addLast(i);
                     }
                     break;
                 case 2:
-                    for (int i = 999; i >= 0; i--) { // 999 - 0
+                    for (int i = 999999; i >= 0; i--) { // 999k - 0
                         ad1.addFirst(i);
                     }
                     break;
-                case 3:
-                    for (int i = 0; i < 500; i++) { // alternate. still has wrap-around due to contiguous resize strategy
-                        ad1.addFirst(499 - i);
-                        ad1.addLast(500 + i);
+                case 3: // alternate. still has wrap-around due to contiguous resize strategy
+                    for (int i = 0; i < 500000; i++) {
+                        ad1.addFirst(499999 - i);
+                        ad1.addLast(500000 + i);
                     }
                     break;
             }
 
             switch (k) {
                 case 0:
-                    for (Integer i = 0; i < 500; i++) { // 0 - 499
+                    for (Integer i = 0; i < 500000; i++) { // 0 - 499k
                         assertEquals("Should have the same value", i, ad1.removeFirst());
                     }
-                    for (Integer i = 999; i >= 500; i--) { // 999 - 500
+                    for (Integer i = 999999; i >= 500000; i--) { // 999k - 500k
                         assertEquals("Should have the same value", i, ad1.removeLast());
                     }
                     break;
                 case 1:
-                    for (Integer i = 0; i < 1000; i++) { // 0 - 999
+                    for (Integer i = 0; i < 1000000; i++) { // 0 - 999k
                         assertEquals("Should have the same value", i, ad1.removeFirst());
                     }
                     break;
                 case 2:
-                    for (Integer i = 999; i >= 0; i--) { // 999 - 0
+                    for (Integer i = 999999; i >= 0; i--) { // 999k - 0
                         assertEquals("Should have the same value", i, ad1.removeLast());
                     }
                     break;
-                case 3:
-                    for (Integer i = 0; i < 500; i++) { // alternate. still has wrap-around due to contiguous resize strategy
+                case 3: // alternate. still has wrap-around due to contiguous resize strategy
+                    for (Integer i = 0; i < 500000; i++) {
                         assertEquals("Should have the same value", i, ad1.removeFirst());
-                        assertEquals("Should have the same value", (Integer) (999 - i), ad1.removeLast());
+                        assertEquals("Should have the same value", (Integer) (999999 - i), ad1.removeLast());
                     }
                     break;
             }
+        }
+    }
+    
+    @Test
+    /* Random add remove tests */
+    public void randomizedAddRemoveTest() {
+        ArrayDeque<Integer> A = new ArrayDeque<>();
+        int N = 5000;
+
+        for (int i = 0; i < N; i += 1) {
+            int operationNumber = StdRandom.uniform(0, 4);
+            if (operationNumber == 0) {
+                // addLast
+                Integer randVal = StdRandom.uniform(0, 100);
+                int oldSize = A.size();
+                A.addLast(randVal);
+                assertEquals(A.size(), oldSize + 1);
+                assertEquals(randVal, A.removeLast());
+                A.addLast(randVal);
+            } else if (operationNumber == 1) {
+                // addFirst
+                Integer randVal = StdRandom.uniform(0, 100);
+                int oldSize = A.size();
+                A.addFirst(randVal);
+                assertEquals(A.size(), oldSize + 1);
+                assertEquals(randVal, A.removeFirst());
+                A.addFirst(randVal);
+            }else if (operationNumber == 2) {
+                if (!A.isEmpty()) {
+                    int oldSize = A.size();
+                    A.removeLast();
+                    assertEquals(A.size(), oldSize - 1);
+                } else {
+                    A.removeLast();
+                    assertEquals(A.size(), 0);
+                }
+            } else if (operationNumber == 3) {
+                if (!A.isEmpty()) {
+                    int oldSize = A.size();
+                    A.removeFirst();
+                    assertEquals(A.size(), oldSize - 1);
+                } else {
+                    A.removeFirst();
+                    assertEquals(A.size(), 0);
+                }
+            }
+        }
+    }
+
+    @Test
+    /* Random get and getRecursive tests */
+    public void randomizedGetTest() {
+        ArrayDeque<Integer> A = new ArrayDeque<>();
+        int N = 5000;
+
+        Integer[] indices = new Integer[N];
+        for (int i = 0; i < N; i++) {
+            A.addLast(i);
+            indices[i] = i;
+        }
+        StdRandom.shuffle(indices);
+
+        for (int i = 0; i < N; i++) {
+            Integer index = indices[i];
+            assertEquals(A.get(index), index);
         }
     }
 }
