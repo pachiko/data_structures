@@ -1,9 +1,10 @@
 package deque;
+import java.util.Iterator;
 
 /**
  * Linked-list implementation of a double-ended queue
  */
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     /* Size of the list */
     private int size;
     /* Sentinel node */
@@ -19,16 +20,19 @@ public class LinkedListDeque<T> {
         sentinel.prev = sentinel;
     }
 
+    @Override
     /**
      * Size
      */
     public int size() { return size; }
 
+    @Override
     /**
      * Empty?
      */
     public boolean isEmpty() { return size == 0; }
 
+    @Override
     /**
      * Add element to front
      */
@@ -45,6 +49,7 @@ public class LinkedListDeque<T> {
         size++;
     }
 
+    @Override
     /**
      * Add element to back
      */
@@ -61,6 +66,7 @@ public class LinkedListDeque<T> {
         size++;
     }
 
+    @Override
     /**
      * Remove element from front and return
      */
@@ -79,6 +85,7 @@ public class LinkedListDeque<T> {
         return oldFirst.item;
     }
 
+    @Override
     /**
      * Remove element from back and return
      */
@@ -95,18 +102,18 @@ public class LinkedListDeque<T> {
         return oldLast.item;
     }
 
+    @Override
     /**
      * Print elements
      */
     public void printDeque() {
-        ListNode<T> node = sentinel.next;
-        while(node != sentinel) {
-            System.out.print(node.item + " ");
-            node = node.next;
+        for (T item: this) {
+            System.out.print(item + " ");
         }
         System.out.println();
     }
 
+    @Override
     /**
      * Return ith element, null if none
      */
@@ -148,6 +155,36 @@ public class LinkedListDeque<T> {
     private ListNode<T> getRecursiveHelper(ListNode<T> node, int count, boolean forward) {
         if (count == 0) return node;
         return getRecursiveHelper(forward? node.next : node.prev,count - 1, forward);
+    }
+
+    /**
+     * Iterator
+     */
+    public Iterator<T> iterator() {
+        return new LLDIterator();
+    }
+
+    /**
+     * Iterator
+     */
+    private class LLDIterator implements Iterator<T> {
+        ListNode<T> node;
+
+        LLDIterator() {
+            node = sentinel.next;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return node != sentinel;
+        }
+
+        @Override
+        public T next() {
+            T res = node.item;
+            node = node.next;
+            return res;
+        }
     }
 
     /**

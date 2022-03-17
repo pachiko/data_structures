@@ -1,9 +1,10 @@
 package deque;
+import java.util.Iterator;
 
 /**
  * Array implementation of a double-ended queue
  */
-public class ArrayDeque<T> {
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     /* Size of the array */
     private int size;
     /* Index of the next element when addFirst */
@@ -38,11 +39,13 @@ public class ArrayDeque<T> {
     /**
      * Size
      */
+    @Override
     public int size() { return size; }
 
     /**
      * Empty?
      */
+    @Override
     public boolean isEmpty() { return size == 0; }
 
     /**
@@ -104,6 +107,7 @@ public class ArrayDeque<T> {
     /**
      * Add element to front
      */
+    @Override
     public void addFirst(T item) {
         resizeIfNecessary(true);
         array[nextFirst] = item;
@@ -114,6 +118,7 @@ public class ArrayDeque<T> {
     /**
      * Add element to back
      */
+    @Override
     public void addLast(T item) {
         resizeIfNecessary(true);
         array[nextLast] = item;
@@ -124,6 +129,7 @@ public class ArrayDeque<T> {
     /**
      * Remove element from front and return
      */
+    @Override
     public T removeFirst() {
         if (isEmpty()) return null;
         resizeIfNecessary(false);
@@ -137,6 +143,7 @@ public class ArrayDeque<T> {
     /**
      * Remove element from back and return
      */
+    @Override
     public T removeLast() {
         if (isEmpty()) return null;
         resizeIfNecessary(false);
@@ -150,12 +157,10 @@ public class ArrayDeque<T> {
     /**
      * Print elements
      */
+    @Override
     public void printDeque() {
-        if (!isEmpty()) {
-            int currentFirst = incWrapAround(nextFirst);
-            for (int i = currentFirst; i != nextLast; i = incWrapAround(i)) {
-                System.out.print(array[i] + " ");
-            }
+        for (T item: this) {
+            System.out.print(item + " ");
         }
         System.out.println();
     }
@@ -163,8 +168,42 @@ public class ArrayDeque<T> {
     /**
      * Return ith element, null if none
      */
+    @Override
     public T get(int index) {
         if (index > size - 1 || index < 0) return null;
         return array[(incWrapAround(nextFirst) + index)%array.length];
+    }
+
+    /**
+     * Iterator
+     */
+    public Iterator<T> iterator() {
+        return new ADIterator();
+    }
+
+    /**
+     * Iterator
+     */
+    private class ADIterator implements Iterator<T> {
+        int i;
+        int count;
+
+        ADIterator() {
+            i = incWrapAround(nextFirst);
+            count = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return count < size;
+        }
+
+        @Override
+        public T next() {
+            T res = array[i];
+            i = incWrapAround(i);
+            count++;
+            return res;
+        }
     }
 }
