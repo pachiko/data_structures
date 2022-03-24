@@ -13,7 +13,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     /**
      * Ctor
      */
-    LinkedListDeque() {
+    public LinkedListDeque() {
         size = 0;
         sentinel= new ListNode<>(null);
         sentinel.next = sentinel;

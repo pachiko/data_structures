@@ -29,7 +29,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     /**
      * Ctor
      */
-    ArrayDeque() {
+    public ArrayDeque() {
         size = 0;
         array = (T[]) new Object[8]; // initial capacity of 8
         nextFirst = 3;
