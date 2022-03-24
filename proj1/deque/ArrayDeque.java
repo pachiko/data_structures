@@ -43,12 +43,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public int size() { return size; }
 
     /**
-     * Empty?
-     */
-    @Override
-    public boolean isEmpty() { return size == 0; }
-
-    /**
      * Decrement with wrap-around.
      */
     private int decWrapAround(int i) {
@@ -172,6 +166,35 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public T get(int index) {
         if (index > size - 1 || index < 0) return null;
         return array[(incWrapAround(nextFirst) + index)%array.length];
+    }
+
+    /**
+     * Equals?
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (o instanceof ArrayDeque) {
+            // o's T can be different type as this' T. No exceptions thrown
+            ArrayDeque<T> other = (ArrayDeque<T>) o;
+
+            if (other.size() != size()) {
+                return false;
+            }
+
+            int i = 0;
+            for (T item : other) {
+                if (item != get(i)) {
+                    return false;
+                }
+                i++;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

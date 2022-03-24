@@ -9,7 +9,7 @@ public interface Deque<T> {
     /**
      * Empty?
      */
-    public boolean isEmpty();
+    public default boolean isEmpty() { return size() == 0; }
 
     /**
      * Add element to front

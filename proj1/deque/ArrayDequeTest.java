@@ -2,6 +2,7 @@ package deque;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
 import edu.princeton.cs.algs4.StdRandom;
 
 /** Performs some basic array tests. */
@@ -258,5 +259,35 @@ public class ArrayDequeTest {
             Integer index = indices[i];
             assertEquals(A.get(index), index);
         }
+    }
+
+    @Test
+    /* Test equals method */
+    public void testEquals() {
+        ArrayDeque<Integer> A = new ArrayDeque<>();
+        ArrayDeque<Integer> B = new ArrayDeque<>();
+        ArrayDeque<Integer> C = new ArrayDeque<>();
+        ArrayDeque<Float> D = new ArrayDeque<>();
+        LinkedListDeque<Integer> E = new LinkedListDeque<>();
+        ArrayDeque<Integer> F = new ArrayDeque<>();
+
+        int N = 10;
+        int start = 11;
+        for (int i = start; i < N + start; i++) {
+            A.addLast(i);
+            B.addLast(i + 1);
+            C.addLast(i );
+            D.addLast((float) i);
+            E.addLast(i);
+            F.addLast(i);
+        }
+        C.removeLast();
+
+        assertTrue("I am myself!", A.equals(A));
+        assertFalse("Not the same!", A.equals(B));
+        assertFalse("Not the same size!", A.equals(C));
+        assertFalse("Not the same!", A.equals(D));
+        assertFalse("Not the same type!", A.equals(E));
+        assertTrue("Same!", A.equals(F));
     }
 }

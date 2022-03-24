@@ -28,12 +28,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     /**
-     * Empty?
-     */
-    public boolean isEmpty() { return size == 0; }
-
-    @Override
-    /**
      * Add element to front
      */
     public void addFirst(T item) {
@@ -155,6 +149,33 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private ListNode<T> getRecursiveHelper(ListNode<T> node, int count, boolean forward) {
         if (count == 0) return node;
         return getRecursiveHelper(forward? node.next : node.prev,count - 1, forward);
+    }
+    /**
+     * Equals?
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (o instanceof LinkedListDeque) {
+            // o's T can be different type as this' T. No exceptions thrown
+            LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+
+            if (other.size() != size()) {
+                return false;
+            }
+            int i = 0;
+            for (T item : other) {
+                if (item != get(i)) {
+                    return false;
+                }
+                i++;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

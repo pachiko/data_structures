@@ -220,4 +220,34 @@ public class LinkedListDequeTest {
             assertEquals(L.get(index), index);
         }
     }
+
+    @Test
+    /* Test equals method */
+    public void testEquals() {
+        LinkedListDeque<Integer> A = new LinkedListDeque<>();
+        LinkedListDeque<Integer> B = new LinkedListDeque<>();
+        LinkedListDeque<Integer> C = new LinkedListDeque<>();
+        LinkedListDeque<Float> D = new LinkedListDeque<>();
+        ArrayDeque<Integer> E = new ArrayDeque<>();
+        LinkedListDeque<Integer> F = new LinkedListDeque<>();
+
+        int N = 5;
+        int start = 6;
+        for (int i = start; i < N + start; i++) {
+            A.addLast(i);
+            B.addLast(i + 1);
+            C.addLast(i );
+            D.addLast((float) i);
+            E.addLast(i);
+            F.addLast(i);
+        }
+        C.removeLast();
+
+        assertTrue("I am myself!", A.equals(A));
+        assertFalse("Not the same!", A.equals(B));
+        assertFalse("Not the same size!", A.equals(C));
+        assertFalse("Not the same!", A.equals(D));
+        assertFalse("Not the same type!", A.equals(E));
+        assertTrue("Same!", A.equals(F));
+    }
 }
