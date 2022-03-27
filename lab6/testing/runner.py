@@ -193,8 +193,8 @@ def doExecute(cmnd, dir, timeout):
                 out = nextCommand(full_cmnd, timeout)
             elif next_cmd == "s":
                 full_cmnd = "{} {} {} {}".format(JAVA_COMMAND, JVM_COMMAND, CAPERS_COMMAND, cmnd)
-                print(f"Ready to debug the command `capers {cmnd}`")
-                print("Open IntelliJ and hit the \"Debug\" button. Don't forget to set a breakpoint!")
+                print(f"Ready to debug the command `capers {cmnd}`", flush=True)
+                print("Open IntelliJ and hit the \"Debug\" button. Don't forget to set a breakpoint!", flush=True)
                 out = stepIntoCommand(full_cmnd)
             elif next_cmd == "q":
                 return "User Exit", None
