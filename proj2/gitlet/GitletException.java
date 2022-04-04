@@ -5,8 +5,6 @@ package gitlet;
  *  @author P. N. Hilfinger
  */
 class GitletException extends RuntimeException {
-
-
     /** A GitletException with no message. */
     GitletException() {
         super();
@@ -16,5 +14,4 @@ class GitletException extends RuntimeException {
     GitletException(String msg) {
         super(msg);
     }
-
 }
