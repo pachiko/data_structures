@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -29,6 +30,9 @@ public class Repository {
     /** The commit directory */
     public static final File COMMIT_DIR = join(GITLET_DIR, "commit");
 
+    /** The blob directory */
+    public static final File BLOB_DIR = join(GITLET_DIR, "blob");
+
     /** The OG commit for all repos */
     public static final Commit initCommit = new Commit("initial commit",
             System.getProperty("user.name"), null);
@@ -36,62 +40,95 @@ public class Repository {
     /** Current Commit */
     public static Commit HEAD;
 
+    /** File containing current commit SHA */
+    public static File HEADF = join(GITLET_DIR, "HEAD");
+
     /** Current branch */
     public static String branch;
 
-    /** TreeMap for branch name to its most recent commit */
-    public static TreeMap<String, Commit> branches;
+    /** File containing current branch name */
+    public static File branchF = join(GITLET_DIR, "branch");
+
+    /** Map of branch name to its most recent commit */
+//    public static HashMap<String, String> branches;
 
     /** File containing branches */
-    public static final File branchF = join(GITLET_DIR, "branches");
+//    public static final File branchesF = join(GITLET_DIR, "branches");
 
 
     /** Initialize a .gitlet folder (repository) */
     public static void init() {
         if (inGitlet()) {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.exit(0);
         } else {
+            // Create commit & blob directories and write initial commit
             GITLET_DIR.mkdir();
+            BLOB_DIR.mkdir();
             COMMIT_DIR.mkdir();
             initCommit.write();
 
-//            HEAD = initCommit;
-//            branch = "master";
-//            branches = new TreeMap<>();
-//            branches.put(branch, HEAD);
+            // Set branch name and HEAD commit
+            HEAD = initCommit;
+            String HEADSHA = HEAD.getSHA();
+            branch = "master";
 
-//            writeContents(branchF, serialize(branches)); // dont do this
+            // Write branch name and HEAD commit SHA
+            writeContents(HEADF, HEADSHA);
+            writeContents(branchF, branch);
+
+//            // Initialize and write branch-commit map
+//            branches = new HashMap<>();
+//            branches.put(branch, HEADSHA); // SHA-ing branch names seems like overkill?
+//            writeContents(branchesF, serialize(branches));
         }
     }
+
 
     /** Is the user in a valid gitlet directory? */
     public static boolean inGitlet() {
         return GITLET_DIR.exists();
     }
 
-    public static void createBranch(String name) {
 
+    /** Load current branch name and HEAD commit */
+    private static void loadCurrent() {
+//        branches = (HashMap<String, String>) readObject(branchesF, (new HashMap<String, String>()).getClass());
+//        System.out.println(branches);
+
+        String HEADSHA = readContentsAsString(HEADF);
+        HEAD = readObject(join(COMMIT_DIR, HEADSHA), Commit.class);
+
+        branch = readContentsAsString(branchF);
     }
+
 
     /** Adds a file's changes to the staging area */
     public static void add(String[] args) {
         if (!inGitlet()) {
             System.out.println("Not in an initialized Gitlet directory.");
-            return;
+            System.exit(0);
         }
 
         if (args.length != 2) {
             System.out.println("Incorrect operands.");
-            return;
+            System.exit(0);
         }
 
         File change = join(CWD, args[1]);
         if (!change.exists()) {
-            System.out.println("File to add does not exist!");
-            return;
+            System.out.println("File to add does not exist.");
+            System.exit(0);
         }
 
-//        String contents = readContentsAsString(change);
-//        String sha1 = sha1(contents);
+        loadCurrent();
+
+        String contents = readContentsAsString(change);
+        String SHA = sha1(contents);
+
+        File blob = join(BLOB_DIR, SHA);
+        if (blob.exists()) { // TODO: check blob dir or check commit map? Both. blob dir for dup blobs, commit map for tracked blobs
+
+        }
     }
 }

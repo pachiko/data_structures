@@ -3,6 +3,8 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+
 import static gitlet.Utils.*;
 
 /** Represents a gitlet commit object.
@@ -11,7 +13,7 @@ import static gitlet.Utils.*;
  *
  *  @author TODO
  */
-public class Commit implements Serializable {
+public class Commit implements Serializable, Dumpable {
     /**
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -31,6 +33,14 @@ public class Commit implements Serializable {
      * Do not keep a reference to parent Commit else Serialization will recursively serialize the entire commit tree! */
     private String parent;
 
+    /** SHA of this commit */
+    private String SHA;
+
+    /** Mapping of file names to Blob SHAs */
+    private HashMap<String, String> fileBlobs;
+
+
+    /** Constructor */
     public Commit(String msg, String name, Commit parent) {
         commitDate = new Date(0);
         message = msg;
@@ -40,14 +50,36 @@ public class Commit implements Serializable {
         } else {
             this.parent = "";
         }
+        fileBlobs = new HashMap<>();
+
+        byte[] serial = serialize(this);
+        SHA = sha1(serial);
     }
 
+
+    /** Get SHA */
+    public String getSHA() { return SHA; }
+
+
+    /** Write to file */
     public void write() {
-        byte[] serial = serialize(this);
-        String SHA = sha1(serial);
-        // TODO: Check if commit exists?
         File f = join(Repository.COMMIT_DIR, SHA);
-//        writeObject(f, this);
-        writeContents(f, serial);
+        if (f.exists()) {
+            System.out.println("Commit already exists! " + SHA);
+            System.exit(0);
+        }
+        writeContents(f, serialize(this));
+    }
+
+    /** Dump */
+    public void dump() {
+        System.out.println("=====START Dump Commit=====");
+        System.out.println("Commit SHA: " + SHA);
+        System.out.println("Commit Message: " + message);
+        System.out.println("Commit Date: " + commitDate);
+        System.out.println("Commit Author: " + author);
+        System.out.println("Commit Parent SHA: " + parent);
+        System.out.println("Commit File-Blobs: " + fileBlobs);
+        System.out.println("=====END Dump Commit=====");
     }
 }
