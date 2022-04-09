@@ -2,25 +2,19 @@ package gitlet;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
 
-/** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+/** Represents a gitlet repository. Contains paths to various directories (commits, blobs etc)
+ * Also responsible for running all the commands.
  *
  *  @author TODO
  */
 public class Repository {
-    /**
-     * List all instance variables of the Repository class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided two examples for you.
-     */
-
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
 
@@ -34,18 +28,15 @@ public class Repository {
     public static final File BLOB_DIR = join(GITLET_DIR, "blob");
 
     /** The OG commit for all repos */
-    public static final Commit initCommit = new Commit("initial commit",
-            System.getProperty("user.name"), null);
+    public static final Commit initCommit = new Commit("initial commit", System.getProperty("user.name"), null);
 
     /** Current Commit */
     public static Commit HEAD;
-
     /** File containing current commit SHA */
     public static File HEADF = join(GITLET_DIR, "HEAD");
 
     /** Current branch */
     public static String branch;
-
     /** File containing current branch name */
     public static File branchF = join(GITLET_DIR, "branch");
 
@@ -58,36 +49,26 @@ public class Repository {
 
     /** Initialize a .gitlet folder (repository) */
     public static void init() {
-        if (inGitlet()) {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
-            System.exit(0);
-        } else {
-            // Create commit & blob directories and write initial commit
-            GITLET_DIR.mkdir();
-            BLOB_DIR.mkdir();
-            COMMIT_DIR.mkdir();
-            initCommit.write();
+        GitletChecker.checkValidGitlet();
 
-            // Set branch name and HEAD commit
-            HEAD = initCommit;
-            String HEADSHA = HEAD.getSHA();
-            branch = "master";
+        // Create commit & blob directories and write initial commit
+        GITLET_DIR.mkdir();
+        BLOB_DIR.mkdir();
+        COMMIT_DIR.mkdir();
+        String headSha = initCommit.write();
 
-            // Write branch name and HEAD commit SHA
-            writeContents(HEADF, HEADSHA);
-            writeContents(branchF, branch);
+        // Set branch name and HEAD commit
+        HEAD = initCommit;
+        branch = "master";
 
-//            // Initialize and write branch-commit map
-//            branches = new HashMap<>();
-//            branches.put(branch, HEADSHA); // SHA-ing branch names seems like overkill?
-//            writeContents(branchesF, serialize(branches));
-        }
-    }
+        // Write branch name and HEAD commit SHA
+        writeContents(HEADF, headSha);
+        writeContents(branchF, branch);
 
-
-    /** Is the user in a valid gitlet directory? */
-    public static boolean inGitlet() {
-        return GITLET_DIR.exists();
+//      // Initialize and write branch-commit map
+//      branches = new HashMap<>();
+//      branches.put(branch, HEADSHA); // SHA-ing branch names seems like overkill?
+//      writeContents(branchesF, serialize(branches));
     }
 
 
@@ -96,39 +77,28 @@ public class Repository {
 //        branches = (HashMap<String, String>) readObject(branchesF, (new HashMap<String, String>()).getClass());
 //        System.out.println(branches);
 
-        String HEADSHA = readContentsAsString(HEADF);
-        HEAD = readObject(join(COMMIT_DIR, HEADSHA), Commit.class);
-
+        HEAD = Commit.read(readContentsAsString(HEADF));
         branch = readContentsAsString(branchF);
     }
 
 
     /** Adds a file's changes to the staging area */
     public static void add(String[] args) {
-        if (!inGitlet()) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            System.exit(0);
-        }
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
 
-        if (args.length != 2) {
-            System.out.println("Incorrect operands.");
-            System.exit(0);
-        }
-
-        File change = join(CWD, args[1]);
-        if (!change.exists()) {
-            System.out.println("File to add does not exist.");
-            System.exit(0);
-        }
+        String fileName = args[1];
+        File change = join(CWD, fileName);
+        GitletChecker.checkFileExists(change);
 
         loadCurrent();
+        Stager.setupStageArea();
 
-        String contents = readContentsAsString(change);
-        String SHA = sha1(contents);
+        Blob candidate = new Blob(readContentsAsString(change));
+        String sha = candidate.write(false);
 
-        File blob = join(BLOB_DIR, SHA);
-        if (blob.exists()) { // TODO: check blob dir or check commit map? Both. blob dir for dup blobs, commit map for tracked blobs
-
+        if (HEAD.stage(fileName, sha)) {
+            Stager.addFile(fileName, sha);
         }
     }
 }
