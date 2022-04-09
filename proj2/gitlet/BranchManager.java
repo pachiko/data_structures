@@ -59,6 +59,8 @@ public class BranchManager {
     public static void newCommit(String message) {
         Commit newCommit = new Commit(message, BranchManager.HEAD);
         newCommit.update(Stager.stageAdds, false);
+        newCommit.untrack(Stager.stageRemoves);
+
         String newSha = newCommit.write();
         HEAD = newCommit;
         writeContents(HEADF, newSha);

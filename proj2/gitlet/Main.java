@@ -25,6 +25,9 @@ public class Main {
             case "commit":
                 Repository.commit(args);
                 break;
+            case "rm":
+                Repository.remove(args);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 break;

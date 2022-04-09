@@ -39,8 +39,8 @@ public class Repository {
     }
 
 
-    /** Adds a file's changes to the staging area */
-    public static void add(String[] args) {
+    /** Checks arguments and prepares for staging (add/remove) */
+    private static void prepareStage(String[] args) {
         GitletChecker.checkInvalidGitlet();
         GitletChecker.checkOperands(args.length, 2);
 
@@ -50,15 +50,33 @@ public class Repository {
 
         BranchManager.loadCurrent();
         Stager.setupStageArea();
+    }
+
+
+    /** Adds a file's changes to the staging area */
+    public static void add(String[] args) {
+        prepareStage(args);
+        String fileName = args[1];
+        File change = join(CWD, fileName);
 
         Blob candidate = new Blob(readContentsAsString(change));
         String sha = candidate.write(false,false, null);
 
         if (BranchManager.HEAD.stage(fileName, sha)) {
             Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
-        } else {
-            Stager.removeFile(fileName); // Remove from staging area if present
+        } else { // HEAD tracks the same file as staged (edit, add, revert, add)
+            Stager.unstageFile(fileName); // Unstage from staging area if present
         }
+    }
+
+
+    /** Remove staged file. Also stage it for removal and delete from working directory if HEAD tracks it */
+    public static void remove(String[] args) {
+        prepareStage(args);
+        String fileName = args[1];
+
+        Stager.unstageFile(fileName); // Unstage staged file and deletes untracked blob
+        Stager.removeFile(fileName); // Remove from working directory and stage for removal
     }
 
 

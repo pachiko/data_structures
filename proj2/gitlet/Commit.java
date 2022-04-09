@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
 
-    /** Increase track count of blobs. Usually performed when commit is freshly-made */
+    /** Increase track count of blobs. Usually performed when commit is freshly-made, after being written */
     public void incrTracks() {
         for (Map.Entry<String, String> pair : fileBlobs.entrySet()) {
             String blobSha = pair.getValue();
@@ -108,9 +109,23 @@ public class Commit implements Serializable, Dumpable {
     }
 
 
-    /** Should Stage file? */
+    /** Untrack files. Usually performed when commit is freshly-made, before being written and incrTracks() */
+    public void untrack(HashSet<String> removes) {
+        for (String fileName: removes) {
+            fileBlobs.remove(fileName);
+        }
+    }
+
+
+    /** Should Stage file? Stage if not tracked or different SHA */
     public boolean stage(String fileName, String blobSha) {
         return !blobSha.equals(fileBlobs.get(fileName));
+    }
+
+
+    /** Get blob of tracked file */
+    public String getBlob(String fileName) {
+        return fileBlobs.get(fileName);
     }
 
 

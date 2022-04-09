@@ -51,7 +51,7 @@ public class GitletChecker {
 
     /** Check for staged changes before committing */
     public static void checkStagedChanges() {
-        if (Stager.stageAdds.isEmpty()) {
+        if (Stager.stageAdds.isEmpty() && Stager.stageRemoves.isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         }
