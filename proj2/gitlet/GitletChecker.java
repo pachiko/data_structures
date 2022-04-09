@@ -47,4 +47,21 @@ public class GitletChecker {
             System.exit(0);
         }
     }
+
+
+    /** Check for staged changes before committing */
+    public static void checkStagedChanges() {
+        if (Stager.stageAdds.isEmpty()) {
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
+    }
+
+    /** Check commit message (ie not empty not null) */
+    public static void checkCommitMessage(String s) {
+        if (s == null || s.isEmpty()) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
+    }
 }

@@ -1,10 +1,6 @@
 package gitlet;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -28,23 +24,7 @@ public class Repository {
     public static final File BLOB_DIR = join(GITLET_DIR, "blob");
 
     /** The OG commit for all repos */
-    public static final Commit initCommit = new Commit("initial commit", System.getProperty("user.name"), null);
-
-    /** Current Commit */
-    public static Commit HEAD;
-    /** File containing current commit SHA */
-    public static File HEADF = join(GITLET_DIR, "HEAD");
-
-    /** Current branch */
-    public static String branch;
-    /** File containing current branch name */
-    public static File branchF = join(GITLET_DIR, "branch");
-
-    /** Map of branch name to its most recent commit */
-//    public static HashMap<String, String> branches;
-
-    /** File containing branches */
-//    public static final File branchesF = join(GITLET_DIR, "branches");
+    public static final Commit initCommit = new Commit("initial commit", null);
 
 
     /** Initialize a .gitlet folder (repository) */
@@ -55,30 +35,7 @@ public class Repository {
         GITLET_DIR.mkdir();
         BLOB_DIR.mkdir();
         COMMIT_DIR.mkdir();
-        String headSha = initCommit.write();
-
-        // Set branch name and HEAD commit
-        HEAD = initCommit;
-        branch = "master";
-
-        // Write branch name and HEAD commit SHA
-        writeContents(HEADF, headSha);
-        writeContents(branchF, branch);
-
-//      // Initialize and write branch-commit map
-//      branches = new HashMap<>();
-//      branches.put(branch, HEADSHA); // SHA-ing branch names seems like overkill?
-//      writeContents(branchesF, serialize(branches));
-    }
-
-
-    /** Load current branch name and HEAD commit */
-    private static void loadCurrent() {
-//        branches = (HashMap<String, String>) readObject(branchesF, (new HashMap<String, String>()).getClass());
-//        System.out.println(branches);
-
-        HEAD = Commit.read(readContentsAsString(HEADF));
-        branch = readContentsAsString(branchF);
+        BranchManager.init();
     }
 
 
@@ -91,14 +48,32 @@ public class Repository {
         File change = join(CWD, fileName);
         GitletChecker.checkFileExists(change);
 
-        loadCurrent();
+        BranchManager.loadCurrent();
         Stager.setupStageArea();
 
         Blob candidate = new Blob(readContentsAsString(change));
-        String sha = candidate.write(false);
+        String sha = candidate.write(false,false, null);
 
-        if (HEAD.stage(fileName, sha)) {
-            Stager.addFile(fileName, sha);
+        if (BranchManager.HEAD.stage(fileName, sha)) {
+            Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
+        } else {
+            Stager.removeFile(fileName); // Remove from staging area if present
         }
+    }
+
+
+    /** Commits staged changes to current branch */
+    public static void commit(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+        String message = args[1];
+        GitletChecker.checkCommitMessage(message);
+
+        BranchManager.loadCurrent();
+        Stager.setupStageArea();
+        GitletChecker.checkStagedChanges();
+
+        BranchManager.newCommit(message);
+        Stager.clearStageArea();
     }
 }

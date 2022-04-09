@@ -22,6 +22,9 @@ public class Main {
             case "add":
                 Repository.add(args);
                 break;
+            case "commit":
+                Repository.commit(args);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 break;

@@ -31,9 +31,13 @@ public class Blob implements Serializable, Dumpable {
     public int getCount() { return trackCount; }
 
 
-    /** Change track count */
-    public void incrCount() { trackCount++; }
-    public void decrCount() { trackCount--; }
+    /** Change track count. */
+    public void incrCount() {
+        trackCount++;
+    }
+    public void decrCount() {
+        trackCount--;
+    }
 
 
     /** Returns the SHA */
@@ -52,14 +56,23 @@ public class Blob implements Serializable, Dumpable {
     }
 
 
-    /** Write blob to directory. Returns SHA */
-    public String write(boolean exitDuplicate) {
+    /** Write a new blob to directory. Returns SHA.
+     *  If force: always write to disk
+     *  If duplicate: exit early if exitDuplicate, else ignore writing
+     *  Calculates sha if not passed-in.
+     *  */
+    public String write(boolean exitDuplicate, boolean force, String sha) {
         byte[] bytes = serialize(this);
-        String SHA = sha1(contents);
-        File f = join(Repository.BLOB_DIR, SHA);
-        if (exitDuplicate) checkDuplicate(f, SHA);
-        if (!f.exists()) writeContents(f, bytes);
-        return SHA;
+        if (sha == null) sha = sha1(contents);
+        File f = join(Repository.BLOB_DIR, sha);
+
+        if (force) {
+            writeContents(f, bytes);
+        } else {
+            if (exitDuplicate) checkDuplicate(f, sha);
+            if (!f.exists()) writeContents(f, bytes);
+        }
+        return sha;
     }
 
 
