@@ -37,6 +37,9 @@ public class Main {
             case "find":
                 Repository.find(args);
                 break;
+            case "status":
+                Repository.status();
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 break;

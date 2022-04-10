@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -20,11 +22,10 @@ public class BranchManager {
     /** File containing current branch name */
     public static File branchF = join(Repository.GITLET_DIR, "branch");
 
-    /** Map of branch name to its most recent commit */
-//    public static HashMap<String, String> branches;
-
+    /** Map of branch name to its most recent commit. Needs to be lexicographic */
+    public static TreeMap<String, String> branches;
     /** File containing branches */
-//    public static final File branchesF = join(GITLET_DIR, "branches");
+    public static final File branchesF = join(Repository.GITLET_DIR, "branches");
 
 
     /** Initialize master branch with initial commit */
@@ -39,18 +40,16 @@ public class BranchManager {
         writeContents(HEADF, headSha);
         writeContents(branchF, branch);
 
-//      // Initialize and write branch-commit map
-//      branches = new HashMap<>();
-//      branches.put(branch, HEADSHA); // SHA-ing branch names seems like overkill?
-//      writeContents(branchesF, serialize(branches));
+        // Initialize and write branch-commit map
+        branches = new TreeMap<>();
+        branches.put(branch, headSha);
+        writeContents(branchesF, serialize(branches));
     }
 
 
     /** Load current branch name and HEAD commit */
     public static String loadCurrent() {
-//        branches = (HashMap<String, String>) readObject(branchesF, (new HashMap<String, String>()).getClass());
-//        System.out.println(branches);
-
+        branches = (TreeMap<String, String>) readObject(branchesF, (new TreeMap<String, String>()).getClass());
         String sha = readContentsAsString(HEADF);
         HEAD = Commit.read(sha);
         branch = readContentsAsString(branchF);
@@ -68,5 +67,20 @@ public class BranchManager {
         HEAD = newCommit;
         writeContents(HEADF, newSha);
         HEAD.incrTracks();
+
+        branches.put(branch, newSha);
+        writeContents(branchesF, serialize(branches));
+    }
+
+
+    /** Print branches, with an asterisk on the current branch */
+    public static void printBranches() {
+        System.out.println("=== Branches ===");
+        for (Map.Entry<String, String> entry : branches.entrySet()) {
+            String branchName = entry.getKey();
+            if (branchName.equals(branch)) System.out.println("*" + branchName);
+            else System.out.println(branchName);
+        }
+        System.out.println();
     }
 }

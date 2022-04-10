@@ -159,4 +159,16 @@ public class Repository {
 
         if (!found) System.out.println("Found no commit with that message.");
     }
+
+
+    /** Displays what branches currently exist, and marks the current branch with a *.
+     *  Also displays what files have been staged for addition or removal. */
+    public static void status() {
+        GitletChecker.checkInvalidGitlet();
+        BranchManager.loadCurrent();
+        BranchManager.printBranches();
+        Stager.setupStageArea();
+        Stager.printStageArea();
+        Stager.printUnstagedUntracked();
+    }
 }

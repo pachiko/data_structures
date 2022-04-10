@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
@@ -86,5 +87,31 @@ public class Stager {
             stageRemoves.add(fileName);
             writeContents(stageRemovesF, serialize(stageRemoves));
         }
+    }
+
+
+    /** Print staging area (add/remove) */
+    public static void printStageArea() {
+        System.out.println("=== Staged Files ===");
+        for (Map.Entry<String, String> entry : stageAdds.entrySet()) {
+            System.out.println(entry.getKey());
+        }
+        System.out.println();
+
+        System.out.println("=== Removed Files ===");
+        for (String entry : stageRemoves) {
+            System.out.println(entry);
+        }
+        System.out.println();
+    }
+
+
+    /** Prints unstaged & untracked files (Extra credit) */
+    public static void printUnstagedUntracked() {
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
+
+        System.out.println("=== Untracked Files ===");
+        System.out.println();
     }
 }
