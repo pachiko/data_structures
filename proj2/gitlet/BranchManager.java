@@ -1,10 +1,12 @@
 package gitlet;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
+import static gitlet.Utils.readContentsAsString;
 
 
 /** Helper class to manipulate branches and their commits.
@@ -14,8 +16,6 @@ import static gitlet.Utils.*;
 public class BranchManager {
     /** Current Commit */
     public static Commit HEAD;
-    /** File containing current commit SHA */
-    public static File HEADF = join(Repository.GITLET_DIR, "HEAD");
 
     /** Current branch */
     public static String branch;
@@ -24,8 +24,8 @@ public class BranchManager {
 
     /** Map of branch name to its most recent commit. Needs to be lexicographic */
     public static TreeMap<String, String> branches;
-    /** File containing branches */
-    public static final File branchesF = join(Repository.GITLET_DIR, "branches");
+    /** Directory containing branches */
+    public static final File BRANCH_DIR = join(Repository.GITLET_DIR, "branches");
 
 
     /** Initialize master branch with initial commit */
@@ -36,24 +36,33 @@ public class BranchManager {
         HEAD = Repository.initCommit;
         branch = "master";
 
-        // Write branch name and HEAD commit SHA
-        writeContents(HEADF, headSha);
+        // Write current branch name to file
         writeContents(branchF, branch);
 
-        // Initialize and write branch-commit map
-        branches = new TreeMap<>();
-        branches.put(branch, headSha);
-        writeContents(branchesF, serialize(branches));
+        // Initialize branch folder and write HEAD in a file with current branch name
+        BRANCH_DIR.mkdir();
+        writeContents(join(BRANCH_DIR, branch), headSha);
     }
 
 
     /** Load current branch name and HEAD commit */
     public static String loadCurrent() {
-        branches = (TreeMap<String, String>) readObject(branchesF, (new TreeMap<String, String>()).getClass());
-        String sha = readContentsAsString(HEADF);
-        HEAD = Commit.read(sha);
         branch = readContentsAsString(branchF);
+        String sha = readContentsAsString(join(BRANCH_DIR, branch));
+        HEAD = Commit.read(sha);
         return sha;
+    }
+
+
+    /** Load all branches and their latest commit SHAs into the map */
+    public static void loadAll() {
+        loadCurrent();
+        branches = new TreeMap<>();
+        List<String> branchFileList = plainFilenamesIn(BRANCH_DIR);
+        for (String branchFile : branchFileList) {
+            String sha = readContentsAsString(join(BRANCH_DIR, branchFile));
+            branches.put(branchFile, sha);
+        }
     }
 
 
@@ -65,11 +74,8 @@ public class BranchManager {
 
         String newSha = newCommit.write();
         HEAD = newCommit;
-        writeContents(HEADF, newSha);
+        writeContents(join(BRANCH_DIR, branch), newSha);
         HEAD.incrTracks();
-
-        branches.put(branch, newSha);
-        writeContents(branchesF, serialize(branches));
     }
 
 

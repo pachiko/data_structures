@@ -165,7 +165,7 @@ public class Repository {
      *  Also displays what files have been staged for addition or removal. */
     public static void status() {
         GitletChecker.checkInvalidGitlet();
-        BranchManager.loadCurrent();
+        BranchManager.loadAll();
         BranchManager.printBranches();
         Stager.setupStageArea();
         Stager.printStageArea();
