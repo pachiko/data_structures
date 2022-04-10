@@ -28,6 +28,15 @@ public class Main {
             case "rm":
                 Repository.remove(args);
                 break;
+            case "log":
+                Repository.log();
+                break;
+            case "global-log":
+                Repository.globalLog();
+                break;
+            case "find":
+                Repository.find(args);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 break;

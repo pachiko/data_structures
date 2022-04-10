@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -25,6 +27,10 @@ public class Repository {
 
     /** The OG commit for all repos */
     public static final Commit initCommit = new Commit("initial commit", null);
+
+    /** Date formatter */
+    private static final String pattern = "E MMM d HH:mm:ss yyyy Z";
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
 
     /** Initialize a .gitlet folder (repository) */
@@ -93,5 +99,64 @@ public class Repository {
 
         BranchManager.newCommit(message);
         Stager.clearStageArea();
+    }
+
+
+    /** Prints commits from HEAD to init */
+    public static void log() {
+        GitletChecker.checkInvalidGitlet();
+
+        String sha = BranchManager.loadCurrent();
+        Commit current = BranchManager.HEAD;
+        while (current != null) {
+            printCommit(current, sha);
+            sha = current.getParent();
+            if (sha.isEmpty()) break;
+            current = Commit.read(sha);
+        }
+    }
+
+
+    /** Print all commits */
+    public static void globalLog() {
+        GitletChecker.checkInvalidGitlet();
+
+        List<String> commits = plainFilenamesIn(COMMIT_DIR);
+        for (String sha: commits) {
+            Commit c = readObject(join(COMMIT_DIR, sha), Commit.class);
+            printCommit(c, sha);
+        }
+    }
+
+
+    /** Prints commit during logging */
+    private static void printCommit(Commit c, String sha) {
+        // TODO: commits have 2 parents!
+        System.out.println("===");
+        System.out.println("commit " + sha);
+        System.out.println("Date: " + simpleDateFormat.format(c.getCommitDate()));
+        System.out.println(c.getMessage());
+        System.out.println();
+    }
+
+
+    /** Find all commits with a given message and print them */
+    public static void find(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+        String message = args[1];
+        GitletChecker.checkCommitMessage(message);
+
+        boolean found = false;
+        List<String> commits = plainFilenamesIn(COMMIT_DIR);
+        for (String sha: commits) {
+            Commit c = readObject(join(COMMIT_DIR, sha), Commit.class);
+            if (message.equals(c.getMessage())) {
+                System.out.println(sha);
+                found = true;
+            }
+        }
+
+        if (!found) System.out.println("Found no commit with that message.");
     }
 }

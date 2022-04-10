@@ -47,11 +47,14 @@ public class BranchManager {
 
 
     /** Load current branch name and HEAD commit */
-    public static void loadCurrent() {
+    public static String loadCurrent() {
 //        branches = (HashMap<String, String>) readObject(branchesF, (new HashMap<String, String>()).getClass());
 //        System.out.println(branches);
-        HEAD = Commit.read(readContentsAsString(HEADF));
+
+        String sha = readContentsAsString(HEADF);
+        HEAD = Commit.read(sha);
         branch = readContentsAsString(branchF);
+        return sha;
     }
 
 

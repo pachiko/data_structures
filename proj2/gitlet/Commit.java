@@ -54,6 +54,18 @@ public class Commit implements Serializable, Dumpable {
     }
 
 
+    /** Return parent SHA */
+    public String getParent() { return parent; }
+
+
+    /** Return time stamp */
+    public Date getCommitDate() { return commitDate; }
+
+
+    /** Return message */
+    public String getMessage() { return message; }
+
+
     /** Returns the SHA */
     public String sha() {
         byte[] bytes = serialize(this);
@@ -140,6 +152,7 @@ public class Commit implements Serializable, Dumpable {
 
 
     /** Dump */
+    @Override
     public void dump() {
         System.out.println("=====START Dump Commit=====");
         System.out.println("Commit Message: " + message);
