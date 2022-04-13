@@ -10,7 +10,7 @@ import static gitlet.Utils.*;
 /** Represents a gitlet repository. Contains paths to various directories (commits, blobs etc)
  * Also responsible for running all the commands.
  *
- *  @author TODO
+ *  @author phill
  */
 public class Repository {
     /** The current working directory. */
@@ -45,8 +45,41 @@ public class Repository {
     }
 
 
-    /** Checks arguments and prepares for staging (add/remove) */
-    private static void prepareStage(String[] args) {
+    /** Checks arguments and prepares for add */
+    private static void prepareAdd(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+
+        BranchManager.loadCurrent();
+        Stager.setupStageArea();
+
+        String fileName = args[1];
+        File change = join(CWD, fileName);
+        GitletChecker.checkValidAdd(fileName, change);
+    }
+
+
+    /** Adds a file's changes to the staging area */
+    public static void add(String[] args) {
+        prepareAdd(args);
+        String fileName = args[1];
+        File change = join(CWD, fileName);
+
+        boolean shouldUnstage = true;
+        if (change.exists()) {
+            Blob candidate = new Blob(readContentsAsString(change));
+            String sha = candidate.write(false, false, null);
+            if (BranchManager.HEAD.stage(fileName, sha)) { // not tracked or diff version
+                Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
+                shouldUnstage = false;
+            }
+        }
+        if (shouldUnstage) Stager.unstageFile(fileName);
+    }
+
+
+    /** Checks arguments and prepares for remove */
+    private static void prepareRemove(String[] args) {
         GitletChecker.checkInvalidGitlet();
         GitletChecker.checkOperands(args.length, 2);
 
@@ -59,28 +92,11 @@ public class Repository {
     }
 
 
-    /** Adds a file's changes to the staging area */
-    public static void add(String[] args) {
-        prepareStage(args);
-        String fileName = args[1];
-        File change = join(CWD, fileName);
-
-        Blob candidate = new Blob(readContentsAsString(change));
-        String sha = candidate.write(false,false, null);
-
-        if (BranchManager.HEAD.stage(fileName, sha)) {
-            Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
-        } else { // HEAD tracks the same file as staged (edit, add, revert, add)
-            Stager.unstageFile(fileName); // Unstage from staging area if present
-        }
-    }
-
-
     /** Remove staged file. Also stage it for removal and delete from working directory if HEAD tracks it */
     public static void remove(String[] args) {
-        prepareStage(args);
+        prepareRemove(args);
         String fileName = args[1];
-
+        GitletChecker.checkValidRemove(fileName);
         Stager.unstageFile(fileName); // Unstage staged file and deletes untracked blob
         Stager.removeFile(fileName); // Remove from working directory and stage for removal
     }
@@ -170,5 +186,63 @@ public class Repository {
         Stager.setupStageArea();
         Stager.printStageArea();
         Stager.printUnstagedUntracked();
+    }
+
+
+    /** Checkout files from a commit (or from HEAD if unspecified). Can also checkout an entire branch */
+    public static void checkout(String[] args) {
+        int count = args.length;
+        GitletChecker.checkInvalidGitlet();
+        switch (count) {
+            case 2 -> BranchManager.checkoutBranch(args[1]); // checkout [branch name]
+            case 3 -> checkoutFile(args[2], null); // checkout -- [file name]
+            case 4 -> checkoutFile(args[3], args[1]); // checkout [commit id] -- [file name]
+            default -> GitletChecker.checkOperands(0, 1);
+        }
+    }
+
+
+    /** Checkout file from commit (HEAD if unspecified) */
+    public static void checkoutFile(String fileName, String commitId) {
+        Commit com;
+
+        if (commitId == null) {
+            BranchManager.loadCurrent();
+            com = BranchManager.HEAD;
+        } else {
+            com = findCommit(commitId);
+        }
+        GitletChecker.checkTrackedFile(com, fileName);
+
+        String blobSha = com.getBlob(fileName);
+        Blob b = Blob.read(blobSha);
+        b.putCWD(fileName);
+    }
+
+
+    /** Find commit based on commitID (first 6 digits) */
+    public static Commit findCommit(String commitId) {
+        List<String> commits = plainFilenamesIn(COMMIT_DIR);
+        int l = commitId.length();
+        if (l >= 6) { // must have at least 6 chars for abbreviated commit ID
+            for (String c : commits) {
+                if (commitId.equals(c.substring(0, l))) {
+                    return Commit.read(c);
+                }
+            }
+        }
+        System.out.println("No commit with that id exists.");
+        System.exit(0);
+        return null;
+    }
+
+
+    /** Creates new branch from current commit, but doesn't checkout */
+    public static void branch(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+        String branchName = args[1];
+        GitletChecker.checkDuplicateBranch(branchName);
+        BranchManager.newBranch(branchName);
     }
 }

@@ -11,7 +11,7 @@ import static gitlet.Utils.readContentsAsString;
 
 /** Helper class to manipulate branches and their commits.
  *
- *  @author TODO
+ *  @author phill
  */
 public class BranchManager {
     /** Current Commit */
@@ -88,5 +88,32 @@ public class BranchManager {
             else System.out.println(branchName);
         }
         System.out.println();
+    }
+
+
+    /** Check branch before actual checkout */
+    private static void validBranchCheckout(String branchName) {
+        loadCurrent();
+        GitletChecker.checkSameBranch(branchName);
+        GitletChecker.checkBranchExists(branchName);
+        GitletChecker.checkUntrackedFiles();
+    }
+
+
+    /** Checkout branch */
+    public static void checkoutBranch(String branchName) {
+        validBranchCheckout(branchName);
+        Commit c = Commit.read(readContentsAsString(join(BRANCH_DIR, branchName)));
+        c.updateCWD();
+        writeContents(branchF, branchName);
+        Stager.clearStageArea();
+    }
+
+
+    /** Create new branch */
+    public static void newBranch(String branchName) {
+        branch = readContentsAsString(branchF);
+        String sha = readContentsAsString(join(BRANCH_DIR, branch));
+        writeContents(join(BRANCH_DIR, branchName), sha);
     }
 }

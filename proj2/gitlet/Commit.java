@@ -2,10 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.TreeMap;
-import java.util.Map;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -14,7 +11,7 @@ import static gitlet.Utils.*;
  * It also tracks a map of blobs to indicate the current contents.
  * Also knows about its parent commits and uses their tracked files initially.
  *
- *  @author TODO
+ *  @author phill
  */
 public class Commit implements Serializable, Dumpable {
     /** The message of this Commit. Cannot be NULL or empty! */
@@ -122,9 +119,9 @@ public class Commit implements Serializable, Dumpable {
 
 
     /** Untrack files. Usually performed when commit is freshly-made, before being written and incrTracks() */
-    public void untrack(HashSet<String> removes) {
-        for (String fileName: removes) {
-            fileBlobs.remove(fileName);
+    public void untrack(HashMap<String, String> removes) {
+        for (Map.Entry<String, String> pair : removes.entrySet()) {
+            fileBlobs.remove(pair.getKey());
         }
     }
 
@@ -147,6 +144,20 @@ public class Commit implements Serializable, Dumpable {
             fileBlobs = (TreeMap<String, String>) newMap.clone(); // shallow copy!
         } else {
             fileBlobs.putAll(newMap);
+        }
+    }
+
+
+    /** Updates the CWD with the commit's tracked files */
+    public void updateCWD() {
+        for (Map.Entry<String, String> pair : BranchManager.HEAD.fileBlobs.entrySet()) {
+            restrictedDelete(pair.getKey());
+        }
+
+        for (Map.Entry<String, String> pair : fileBlobs.entrySet()) {
+            String blobSha = pair.getValue();
+            Blob b = Blob.read(blobSha);
+            b.putCWD(pair.getKey());
         }
     }
 

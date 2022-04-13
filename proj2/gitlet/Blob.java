@@ -10,7 +10,7 @@ import static gitlet.Utils.*;
  * Blobs reside in the blob directory
  * Blobs can be removed if no commits point to them and they are unstaged from staging area.
  *
- *  @author TODO
+ *  @author phill
  */
 public class Blob implements Serializable, Dumpable {
     /** Contents of this blob */
@@ -56,8 +56,8 @@ public class Blob implements Serializable, Dumpable {
     }
 
 
-    /** Write a new blob to directory. Returns SHA.
-     *  If force: always write to disk
+    /** Write a new blob to the blob directory. Returns SHA.
+     *  If force: always write to disk (updating)
      *  If duplicate: exit early if exitDuplicate, else ignore writing
      *  Calculates sha if not passed-in.
      *  */
@@ -82,6 +82,13 @@ public class Blob implements Serializable, Dumpable {
             System.out.println("Blob already exists! " + sha);
             System.exit(0);
         }
+    }
+
+
+    /** Put contents of blob in working directory, will overwrite if file is present. */
+    public void putCWD(String fileName) {
+        File f = join(Repository.CWD, fileName);
+        writeContents(f, contents);
     }
 
 

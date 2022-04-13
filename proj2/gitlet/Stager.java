@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -9,7 +10,7 @@ import static gitlet.Utils.*;
 
 /** Helper class to manipulate staging area.
  *
- *  @author TODO
+ *  @author phill
  */
 public class Stager {
     /** Map of filenames to Blob SHAs to add */
@@ -17,7 +18,7 @@ public class Stager {
     public static final File stageAddsF = join(Repository.GITLET_DIR, "stageAdds");
 
     /** Map of filenames to Blob SHAs to remove */
-    public static HashSet<String> stageRemoves;
+    public static HashMap<String, String> stageRemoves;
     public static final File stageRemovesF = join(Repository.GITLET_DIR, "stageRemoves");
 
 
@@ -31,10 +32,10 @@ public class Stager {
         }
 
         if (!stageRemovesF.exists()) {
-            stageRemoves = new HashSet<>();
+            stageRemoves = new HashMap<>();
             writeContents(stageRemovesF, serialize(stageRemoves));
         } else {
-            stageRemoves = (HashSet<String>) readObject(stageRemovesF, (new HashSet<String>()).getClass());
+            stageRemoves = (HashMap<String, String>) readObject(stageRemovesF, (new HashMap<String, String>()).getClass());
         }
     }
 
@@ -42,13 +43,13 @@ public class Stager {
     /** Clear staging area */
     public static void clearStageArea() {
         stageAdds = null;
-        stageAddsF.delete();
+        if (stageAddsF.exists()) stageAddsF.delete();
         stageRemoves = null;
-        stageRemovesF.delete();
+        if (stageRemovesF.exists()) stageRemovesF.delete();
     }
 
 
-    /** Remove blob if not tracked */
+    /** Remove blob if not tracked. Usually done when adding modified versions of untracked files */
     public static void removeUntrackedBlob(String sha) {
         Blob blob = Blob.read(sha);
         if (blob.getCount() <= 0) {
@@ -70,21 +71,27 @@ public class Stager {
     }
 
 
-    /** Unstage file from staging area and removes the blob if untracked */
+    /** Stage a tracked file for removal */
+    public static void removeFile(String fileName) {
+        if (BranchManager.HEAD.tracked(fileName)) {
+            restrictedDelete(fileName);
+            stageRemoves.put(fileName, BranchManager.HEAD.getBlob(fileName));
+            writeContents(stageRemovesF, serialize(stageRemoves));
+        }
+    }
+
+
+    /** Unstage file from staging area and removes the blob if untracked.
+     * If file is staged for removal, put the file back into CWD */
     public static void unstageFile(String fileName) {
         if (stageAdds.containsKey(fileName)) {
             String oldSha = stageAdds.remove(fileName);
             removeUntrackedBlob(oldSha);
             writeContents(stageAddsF, serialize(stageAdds));
-        }
-    }
-
-
-    /** Stage a tracked file for removal */
-    public static void removeFile(String fileName) {
-        if (BranchManager.HEAD.tracked(fileName)) {
-            restrictedDelete(fileName);
-            stageRemoves.add(fileName);
+        } else if (stageRemoves.containsKey(fileName)) {
+            String blobSha = stageRemoves.remove(fileName);
+            Blob restore = Blob.read(blobSha);
+            restore.putCWD(fileName);
             writeContents(stageRemovesF, serialize(stageRemoves));
         }
     }
@@ -99,8 +106,8 @@ public class Stager {
         System.out.println();
 
         System.out.println("=== Removed Files ===");
-        for (String entry : stageRemoves) {
-            System.out.println(entry);
+        for (Map.Entry<String, String> entry : stageRemoves.entrySet()) {
+            System.out.println(entry.getKey());
         }
         System.out.println();
     }
