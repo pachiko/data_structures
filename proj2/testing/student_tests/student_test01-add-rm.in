@@ -1,0 +1,147 @@
+# Test the add and remove commands
+# Also inspects staging area as commands are run
+I definitions.inc
+I student_commit-setup.inc
+# Modify, stage, manual remove. The changes should still be committed
++ wug.txt modifiedwug.txt
+> add wug.txt
+<<<
+- wug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+wug.txt
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> commit "modified wug"
+<<<
+# Modify, stage, remove, file should be deleted from CWD and staged for removal
++ wug.txt notwug.txt
+> add wug.txt
+<<<
+> rm wug.txt
+<<<
+* wug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+wug.txt
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+# Adding will bring back the file tracked by (but will not be staged since no differences)
+> add wug.txt
+<<<
+= wug.txt modifiedwug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+# Put a different wug, stage, then change back to HEAD's wug and stage again.
+# No changes should be staged
++ wug.txt wug.txt
+> add wug.txt
+<<<
++ wug.txt modifiedwug.txt
+> add wug.txt
+<<<
+> commit "change back to original wug"
+No changes added to the commit.
+<<<
+# Remove wug, add (should undo the remove), then remove and check outputs
+> rm wug.txt
+<<<
+> add wug.txt
+<<<
+= wug.txt modifiedwug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> rm wug.txt
+<<<
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+wug.txt
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> commit "removed wug"
+<<<
+# You can't add/remove what isn't there
+> add wug.txt
+File does not exist.
+<<<
+> rm wug.txt
+File does not exist.
+<<<
+> log
+===
+${COMMIT_HEAD}
+removed wug
+
+===
+${COMMIT_HEAD}
+modified wug
+
+===
+${COMMIT_HEAD}
+a is a wug
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+# Can't checkout a removed file from a commit
+# UID of removed wug
+D REMOVED_UID "${1}"
+> checkout ${REMOVED_UID} -- wug.txt
+File does not exist in that commit.
+<<<
+# Can't remove an untracked and unstaged file
++ wug.txt wug.txt
+> rm wug.txt
+No reason to remove the file.
+<<<
