@@ -97,3 +97,27 @@ master
 <<<
 * wug2.txt
 = wug.txt wug.txt
+# Removing branches
+> rm-branch blablabla
+A branch with that name does not exist.
+<<<
+> rm-branch another
+Cannot remove the current branch.
+<<<
+> checkout master
+<<<
+> rm-branch another
+<<<
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<

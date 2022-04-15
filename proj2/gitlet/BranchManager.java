@@ -116,4 +116,11 @@ public class BranchManager {
         String sha = readContentsAsString(join(BRANCH_DIR, branch));
         writeContents(join(BRANCH_DIR, branchName), sha);
     }
+
+
+    /** Remove branch */
+    public static void removeBranch(String branchName) {
+        File f = join(BRANCH_DIR, branchName);
+        f.delete();
+    }
 }

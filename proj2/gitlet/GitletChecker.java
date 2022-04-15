@@ -135,4 +135,19 @@ public class GitletChecker {
             System.exit(0);
         }
     }
+
+
+    /** Check if branch can be removed */
+    public static void checkValidBranchRemove(String branchName) {
+        File f = join(BranchManager.BRANCH_DIR, branchName);
+        if (!f.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        BranchManager.loadCurrent();
+        if (BranchManager.branch.equals(branchName)) {
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+    }
 }

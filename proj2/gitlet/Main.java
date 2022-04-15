@@ -26,6 +26,7 @@ public class Main {
             case "status" -> Repository.status();
             case "checkout" -> Repository.checkout(args);
             case "branch" -> Repository.branch(args);
+            case "rm-branch" -> Repository.rmBranch(args);
             default -> System.out.println("No command with that name exists.");
         }
     }

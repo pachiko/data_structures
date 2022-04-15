@@ -245,4 +245,16 @@ public class Repository {
         GitletChecker.checkDuplicateBranch(branchName);
         BranchManager.newBranch(branchName);
     }
+
+
+    /** Remove an existing branch, provided HEAD is not on the branch to be removed
+     * Does not remove commits of the branch, even if those commits are not tracked by any branch
+     * In real Git, it is the same so that reflog can recover those commits (up to 30 days) */
+    public static void rmBranch(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+        String branchName = args[1];
+        GitletChecker.checkValidBranchRemove(branchName);
+        BranchManager.removeBranch(branchName);
+    }
 }
