@@ -3,8 +3,7 @@ package gitlet;
 import java.io.File;
 import java.util.List;
 
-import static gitlet.Utils.join;
-import static gitlet.Utils.plainFilenamesIn;
+import static gitlet.Utils.*;
 
 /** Helper class to check for files, SHAs and arguments.
  * Also prints the correct error message before exiting JAVA.
@@ -115,11 +114,12 @@ public class GitletChecker {
     }
 
 
-    /** See if any untracked files in CWD */
+    /** See if any untracked files in CWD. Will also check stage area (provided it is in sync with CWD) */
     public static void checkUntrackedFiles() {
         List<String> workFileList = plainFilenamesIn(Repository.CWD);
         for (String workFile : workFileList) {
-            if (!BranchManager.HEAD.tracked(workFile)) {
+            String sha = sha1(readContentsAsString(join(Repository.CWD, workFile)));
+            if (BranchManager.HEAD.stage(workFile, sha)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
             }

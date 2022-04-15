@@ -1,0 +1,99 @@
+# Test the 3 ways that checkout works which are
+# 1) checkout a file from HEAD
+# 2) checkout a file from a commit
+# 3) checkout an entire branch
+I definitions.inc
+I student_commit-setup.inc
+# Create a new branch (does not checkout)
+> branch another
+<<<
+> status
+=== Branches ===
+another
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+# Add new file, modify existing file and commit
++ wug2.txt wug.txt
+> add wug2.txt
+<<<
++ wug.txt modifiedwug.txt
+> add wug.txt
+<<<
+> commit "added wug2.txt, modified wug.txt"
+<<<
+= wug.txt modifiedwug.txt
+# Checking out a non-existent file in HEAD
+> checkout -- wug3.txt
+File does not exist in that commit.
+<<<
+# Log to find 1st commit for testing
+> log
+===
+${COMMIT_HEAD}
+added wug2.txt, modified wug.txt
+
+===
+${COMMIT_HEAD}
+my first wug
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+D WUG1_UID "${2}"
+# Checkout wug.txt from 1st commit
+> checkout ${WUG1_UID} -- wug.txt
+<<<
+= wug.txt wug.txt
+# Checkout wug2.txt from 1st commit
+> checkout abcd123 -- wug2.txt
+No commit with that id exists.
+<<<
+> checkout ${WUG1_UID} -- wug2.txt
+File does not exist in that commit.
+<<<
+# Try to checkout another branch
+> checkout another
+There is an untracked file in the way; delete it, or add and commit it first.
+<<<
+# Stage the change (should still be detected)
+> add wug.txt
+<<<
+> checkout another
+There is an untracked file in the way; delete it, or add and commit it first.
+<<<
+# Clear staged wug (but that removes wug since it is tracked, so we add it back)
+# Then checkout another (should be able to)
+# Note that real git behaves the same: checking out does not clear the staging area (it remains)
+> rm wug.txt
+<<<
+> add wug.txt
+<<<
+> checkout another
+<<<
+> status
+=== Branches ===
+*another
+master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+* wug2.txt
+= wug.txt wug.txt

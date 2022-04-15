@@ -127,7 +127,7 @@ modified wug
 
 ===
 ${COMMIT_HEAD}
-a is a wug
+my first wug
 
 ===
 ${COMMIT_HEAD}
