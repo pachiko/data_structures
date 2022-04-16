@@ -257,4 +257,18 @@ public class Repository {
         GitletChecker.checkValidBranchRemove(branchName);
         BranchManager.removeBranch(branchName);
     }
+
+    /** Reset to a commit */
+    public static void reset(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+        String commitId = args[1];
+        Commit com = findCommit(commitId);
+        BranchManager.loadCurrent();
+        GitletChecker.checkUntrackedFiles();
+
+        Stager.clearStageArea();
+        com.updateCWD();
+        writeContents(join(BranchManager.BRANCH_DIR, BranchManager.branch), com.sha());
+    }
 }

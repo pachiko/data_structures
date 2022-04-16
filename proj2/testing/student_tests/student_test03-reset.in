@@ -1,0 +1,147 @@
+# Test reset
+I definitions.inc
+I student_commit-setup.inc
+# Add new file, modify existing file and commit
++ wug2.txt wug.txt
+> add wug2.txt
+<<<
++ wug.txt modifiedwug.txt
+> add wug.txt
+<<<
+> commit "added wug2.txt, modified wug.txt"
+<<<
+> rm wug.txt
+<<<
+> commit "removed wug.txt"
+<<<
+# Log, then reset to previous commit
+> log
+===
+${COMMIT_HEAD}
+removed wug.txt
+
+===
+${COMMIT_HEAD}
+added wug2.txt, modified wug.txt
+
+===
+${COMMIT_HEAD}
+my first wug
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+D WUG1_UID "${3}"
+D WUG2_UID "${2}"
+D WUG3_UID "${1}"
+> reset ${WUG2_UID}
+<<<
+= wug2.txt wug.txt
+= wug.txt modifiedwug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+# Reset back to the latest commit
+> reset ${WUG3_UID}
+<<<
+* wug.txt
+= wug2.txt wug.txt
+# Checkout a file from previous commit, then reset
+> checkout ${WUG2_UID} -- wug.txt
+<<<
+> reset ${WUG1_UID}
+There is an untracked file in the way; delete it, or add and commit it first.
+<<<
+> rm wug.txt
+No reason to remove the file.
+<<<
+- wug.txt
+> reset ${WUG1_UID}
+<<<
+# HEAD should now be at 1st commit
+> log
+===
+${COMMIT_HEAD}
+my first wug
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+# Reset to some invalid commit
+> reset abc123
+No commit with that id exists.
+<<<
+# Add, manual delete, then reset, should clear staging area and update CWD
+> checkout ${WUG2_UID} -- wug.txt
+<<<
+> add wug.txt
+<<<
+- wug.txt
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+wug.txt
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> reset ${WUG2_UID}
+<<<
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+= wug.txt modifiedwug.txt
+# Checkout the same file from an older commit, should be able to since checkout doesn't stage it
+> reset ${WUG3_UID}
+<<<
+> checkout ${WUG2_UID} -- wug2.txt
+<<<
+# Now remove the file, reset should still be possible due to absence of untracked files (rm is staged)
+> rm wug2.txt
+<<<
+> status
+=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+wug2.txt
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> reset ${WUG1_UID}
+<<<
