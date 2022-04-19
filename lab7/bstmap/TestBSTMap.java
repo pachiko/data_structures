@@ -87,4 +87,17 @@ public class TestBSTMap {
         assertTrue(b.containsKey("hi"));
     }
 
+    // Prints tree in-order
+    @Test
+    public void printInOrder() {
+        BSTMap<Integer, Integer> b = new BSTMap<>();
+        b.put(5, 5);
+        b.put(7, 7);
+        b.put(1, 1);
+        b.put(2, 2);
+        b.put(4, 4);
+        b.put(3, 3);
+        b.put(6, 6);
+        b.printInOrder(); // 1,2,3,4,5,6,7
+    }
 }
