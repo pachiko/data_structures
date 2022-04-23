@@ -1,0 +1,30 @@
+For random tests:
+    # of entries: 15k
+    Length of String key: 12
+    Time of MyHashMap is within factor of 10 to Util.HashMap
+
+ For lexicographical tests:
+    # of entries: 15k
+    Length of String key: 12
+    Time of MyHashMap is within factor of 10 to Util.HashMap
+
+What this tells us is that state-of-the-art HashMaps are relatively easy to implement compared to state-of-the-art
+ TreeMaps.
+ When would it be better to use a BSTMap/TreeMap instead of a HashMap?
+
+Answer: When order of keys is important for the application.
+
+
+================================================= Buckets ==============================================================
+ Among the bucket types used, TreeSet is the slowest (15k entries, length 12 Strings).
+ Might be because of the self-balancing algorithm
+
+You might notice that our implementation of MyHashMapTSBuckets and MyHashMapHSBuckets searches for a Node by iterating
+over the entire data structure.
+But from what we know, trees and hash tables support more efficient lookups than that.
+Would our hash table speed up if we were able to use a logarithmic search over the TreeSet or a
+constant-time search over the HashSet?
+
+Answer: Does not work since they are Sets and not Maps. Sets do not have a get() method
+If we use TreeMap, then yes it will be faster if binary search is used.
+If we use HashMap, it makes no difference since the hashCode for Key is the same.
