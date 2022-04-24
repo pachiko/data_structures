@@ -196,7 +196,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public void changePriority(T item, double priority) {
         for (Node n: contents) {
-            if (item.equals(n.item())) {
+            if (n != null && item.equals(n.item())) {
                 n.myPriority = priority;
                 return;
             }
@@ -302,8 +302,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
             pq.contents[i] = new ArrayHeap<String>.Node("x" + i, i);
         }
         // Change item x6's priority to a low value.
+        pq.changePriority("x6", 0);
 
-        pq.contents[6].myPriority = 0;
         if (debugHeap) {
             System.out.println("PQ before swimming:");
             System.out.println(pq);
@@ -332,7 +332,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
             pq.contents[i] = new ArrayHeap<String>.Node("x" + i, i);
         }
         // Change root's priority to a large value.
-        pq.contents[1].myPriority = 10;
+        pq.changePriority("x1", 10);
+
         if (debugHeap) {
             System.out.println("PQ before sinking:");
             System.out.println(pq);
