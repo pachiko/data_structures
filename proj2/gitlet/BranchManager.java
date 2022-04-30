@@ -68,7 +68,7 @@ public class BranchManager {
 
     /** Updates the HEAD commit with a new one for the current branch */
     public static void newCommit(String message) {
-        Commit newCommit = new Commit(message, BranchManager.HEAD);
+        Commit newCommit = new Commit(message, BranchManager.HEAD, null);
         newCommit.update(Stager.stageAdds, false);
         newCommit.untrack(Stager.stageRemoves);
 
@@ -122,5 +122,11 @@ public class BranchManager {
     public static void removeBranch(String branchName) {
         File f = join(BRANCH_DIR, branchName);
         f.delete();
+    }
+
+
+    /** Overwrite HEAD */
+    public static void overwriteHEAD(String sha) {
+        writeContents(join(BranchManager.BRANCH_DIR, BranchManager.branch), sha);
     }
 }

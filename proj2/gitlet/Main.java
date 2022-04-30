@@ -28,6 +28,7 @@ public class Main {
             case "branch" -> Repository.branch(args);
             case "rm-branch" -> Repository.rmBranch(args);
             case "reset" -> Repository.reset(args);
+            case "merge" -> Repository.merge(args);
             default -> System.out.println("No command with that name exists.");
         }
     }

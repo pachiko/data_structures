@@ -52,6 +52,7 @@ public class GitletChecker {
         }
     }
 
+
     /** Check if the file can be added (can unstage from removed/file exists in CWD) */
     public static void checkValidAdd(String fileName, File f) {
         if (!Stager.stageRemoves.containsKey(fileName) && !f.exists()) {
@@ -59,6 +60,7 @@ public class GitletChecker {
             System.exit(0);
         }
     }
+
 
     /** Check if the file has a reason to remove (ie staged/tracked) */
     public static void checkValidRemove(String fileName) {
@@ -73,6 +75,15 @@ public class GitletChecker {
     public static void checkStagedChanges() {
         if (Stager.stageAdds.isEmpty() && Stager.stageRemoves.isEmpty()) {
             System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
+    }
+
+
+    /** Check for staged changes before merging */
+    public static void checkUncommittedChanges() {
+        if (!Stager.stageAdds.isEmpty() || !Stager.stageRemoves.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
             System.exit(0);
         }
     }
@@ -94,6 +105,7 @@ public class GitletChecker {
             System.exit(0);
         }
     }
+
 
     /** Check same branch during checkout */
     public static void checkSameBranch(String branchName) {
@@ -137,16 +149,16 @@ public class GitletChecker {
     }
 
 
-    /** Check if branch can be removed */
-    public static void checkValidBranchRemove(String branchName) {
+    /** Check if branch can be removed/merged */
+    public static void checkValidBranch(String branchName, boolean remove) {
         File f = join(BranchManager.BRANCH_DIR, branchName);
         if (!f.exists()) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
         }
-        BranchManager.loadCurrent();
         if (BranchManager.branch.equals(branchName)) {
-            System.out.println("Cannot remove the current branch.");
+            if (remove) System.out.println("Cannot remove the current branch.");
+            else System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
     }

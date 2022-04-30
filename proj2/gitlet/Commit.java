@@ -27,6 +27,9 @@ public class Commit implements Serializable, Dumpable {
      * Do not keep a reference to parent Commit else Serialization will recursively serialize the entire commit tree! */
     private String parent;
 
+    /** Second parent from merge */
+    private String mergeParent;
+
     /** Mapping of file names to Blob SHAs
      * DO NOT USE HASH! Order is different each time it gets (de)serialized and it messes with the SHA-ing later
      * For hashing, order matters! Eg hash(abc) != hash(bac)
@@ -36,7 +39,7 @@ public class Commit implements Serializable, Dumpable {
 
 
     /** Constructor */
-    public Commit(String msg, Commit parent) {
+    public Commit(String msg, Commit parent, Commit merge) {
         message = msg;
         author = System.getProperty("user.name");
         if (parent != null) {
@@ -44,16 +47,17 @@ public class Commit implements Serializable, Dumpable {
             commitDate = new Date();
             update(parent.fileBlobs, true);
         } else {
-            this.parent = "";
             commitDate = new Date(0);
             fileBlobs = new TreeMap<>();
         }
+        if (merge != null) mergeParent = sha1(serialize(merge));
     }
-
 
     /** Return parent SHA */
     public String getParent() { return parent; }
 
+    /** Return second parent SHA */
+    public String getMergeParent() { return mergeParent; }
 
     /** Return time stamp */
     public Date getCommitDate() { return commitDate; }
@@ -170,6 +174,9 @@ public class Commit implements Serializable, Dumpable {
         System.out.println("Commit Date: " + commitDate);
         System.out.println("Commit Author: " + author);
         System.out.println("Commit Parent SHA: " + parent);
+        if (mergeParent != null) {
+            System.out.println("Merge Parent SHA: " + mergeParent);
+        }
         System.out.println("Commit File-Blobs: " + fileBlobs);
         System.out.println("=====END Dump Commit=====");
     }

@@ -26,7 +26,7 @@ public class Repository {
     public static final File BLOB_DIR = join(GITLET_DIR, "blob");
 
     /** The OG commit for all repos */
-    public static final Commit initCommit = new Commit("initial commit", null);
+    public static final Commit initCommit = new Commit("initial commit", null, null);
 
     /** Date formatter */
     private static final String pattern = "E MMM d HH:mm:ss yyyy Z";
@@ -118,7 +118,7 @@ public class Repository {
     }
 
 
-    /** Prints commits from HEAD to init */
+    /** Prints commits from HEAD to init. Ignores merge parents */
     public static void log() {
         GitletChecker.checkInvalidGitlet();
 
@@ -127,7 +127,7 @@ public class Repository {
         while (current != null) {
             printCommit(current, sha);
             sha = current.getParent();
-            if (sha.isEmpty()) break;
+            if (sha == null) break;
             current = Commit.read(sha);
         }
     }
@@ -147,9 +147,12 @@ public class Repository {
 
     /** Prints commit during logging */
     private static void printCommit(Commit c, String sha) {
-        // TODO: commits have 2 parents!
         System.out.println("===");
         System.out.println("commit " + sha);
+        String mp = c.getMergeParent();
+        if (mp != null) {
+            System.out.println("Merge: " + c.getParent().substring(0, 7) + " " + mp.substring(0, 7));
+        }
         System.out.println("Date: " + simpleDateFormat.format(c.getCommitDate()));
         System.out.println(c.getMessage());
         System.out.println();
@@ -254,9 +257,11 @@ public class Repository {
         GitletChecker.checkInvalidGitlet();
         GitletChecker.checkOperands(args.length, 2);
         String branchName = args[1];
-        GitletChecker.checkValidBranchRemove(branchName);
+        BranchManager.loadCurrent();
+        GitletChecker.checkValidBranch(branchName, true);
         BranchManager.removeBranch(branchName);
     }
+
 
     /** Reset to a commit */
     public static void reset(String[] args) {
@@ -270,5 +275,24 @@ public class Repository {
         Stager.clearStageArea();
         com.updateCWD();
         writeContents(join(BranchManager.BRANCH_DIR, BranchManager.branch), com.sha());
+    }
+
+
+    /** Merge two branches */
+    public static void merge(String[] args) {
+        GitletChecker.checkInvalidGitlet();
+        GitletChecker.checkOperands(args.length, 2);
+
+        String mergeBranch = args[1];
+        String mainSHA = BranchManager.loadCurrent();
+        GitletChecker.checkValidBranch(mergeBranch, false);
+        String mergeSHA = readContentsAsString(join(BranchManager.BRANCH_DIR, mergeBranch));
+        Commit merge = Commit.read(mergeSHA);
+
+        GitletChecker.checkUntrackedFiles();
+        Stager.setupStageArea();
+        GitletChecker.checkUncommittedChanges();
+        SplitPointFinder finder = new SplitPointFinder(mainSHA, mergeSHA, BranchManager.HEAD, merge);
+        Commit ancestor = finder.findSplitPoint();
     }
 }
