@@ -92,7 +92,7 @@ public class Merger {
         Blob mainBlob = (mainSHA == null)? new Blob(null) : Blob.read(mainSHA);
         Blob mergeBlob = (mergeSHA == null)? new Blob(null) : Blob.read(mergeSHA);
         Blob resBlob = mainBlob.mergeConflict(mergeBlob);
-        String resSHA = resBlob.write(true, false, null); // TODO: no need to check for duplicate?
+        String resSHA = resBlob.write(true, false, null);
         mainFiles.put(file, resSHA);
     }
 

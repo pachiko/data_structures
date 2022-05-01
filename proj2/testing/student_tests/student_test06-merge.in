@@ -102,3 +102,51 @@ ${COMMIT_HEAD}
 initial commit
 
 <<<*
++ wugMeme.txt wugX3.txt
+> add wugMeme.txt
+<<<
+> commit "wug wug wug"
+<<<
+> checkout branch1
+<<<
++ wugMeme.txt whatIsWug.txt
+> add wugMeme.txt
+<<<
+> commit "what is wug"
+<<<
+> merge branch2
+Encountered a merge conflict.
+<<<
+= wugMeme.txt conflictWugMeme.txt
+= wug1.txt conflictWug.txt
+* wug2.txt
+> log
+===
+${COMMIT_HEAD}
+Merged branch2 into branch1.
+
+===
+${COMMIT_HEAD}
+what is wug
+
+===
+${COMMIT_HEAD}
+removed wug2
+
+===
+${COMMIT_HEAD}
+Merged branch2 into branch1.
+
+===
+${COMMIT_HEAD}
+modified wug1
+
+===
+${COMMIT_HEAD}
+added wug1
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
