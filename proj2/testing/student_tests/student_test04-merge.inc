@@ -1,4 +1,4 @@
-# Test reset
+# Test merge (Basics)
 I definitions.inc
 > init
 <<<
@@ -48,17 +48,3 @@ ${COMMIT_HEAD}
 initial commit
 
 <<<*
-+ wug2.txt wug.txt
-> add wug2.txt
-<<<
-> commit "added wug2"
-<<<
-> checkout splitRoot
-<<<
-+ wug3.txt wug.txt
-> add wug3.txt
-<<<
-> commit "added wug3"
-<<<
-> merge master
-<<<

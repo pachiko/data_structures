@@ -1,0 +1,104 @@
+# Test merge with various split points
+I definitions.inc
+> init
+<<<
+> branch branch1
+<<<
+> checkout branch1
+<<<
++ wug1.txt wug.txt
+> add wug1.txt
+<<<
+> commit "added wug1"
+<<<
+> checkout master
+<<<
+> branch branch2
+<<<
+> checkout branch2
+<<<
++ wug2.txt wug.txt
+> add wug2.txt
+<<<
+> commit "added wug2"
+<<<
+> merge branch1
+<<<
+> log
+===
+${COMMIT_HEAD}
+Merged branch1 into branch2.
+
+===
+${COMMIT_HEAD}
+added wug2
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+> checkout branch1
+<<<
++ wug1.txt modifiedwug.txt
+> add wug1.txt
+<<<
+> commit "modified wug1"
+<<<
+> merge branch2
+<<<
+> log
+===
+${COMMIT_HEAD}
+Merged branch2 into branch1.
+
+===
+${COMMIT_HEAD}
+modified wug1
+
+===
+${COMMIT_HEAD}
+added wug1
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+> rm wug2.txt
+<<<
+> commit "removed wug2"
+<<<
+> checkout branch2
+<<<
+> rm wug1.txt
+<<<
+> commit "removed wug1"
+<<<
+> merge branch1
+Encountered a merge conflict.
+<<<
+* wug2.txt
+= wug1.txt conflictWug.txt
+> log
+===
+${COMMIT_HEAD}
+Merged branch1 into branch2.
+
+===
+${COMMIT_HEAD}
+removed wug1
+
+===
+${COMMIT_HEAD}
+Merged branch1 into branch2.
+
+===
+${COMMIT_HEAD}
+added wug2
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*

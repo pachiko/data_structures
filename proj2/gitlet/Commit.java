@@ -53,11 +53,14 @@ public class Commit implements Serializable, Dumpable {
         if (merge != null) mergeParent = sha1(serialize(merge));
     }
 
+
     /** Return parent SHA */
     public String getParent() { return parent; }
 
+
     /** Return second parent SHA */
     public String getMergeParent() { return mergeParent; }
+
 
     /** Return time stamp */
     public Date getCommitDate() { return commitDate; }
@@ -65,6 +68,10 @@ public class Commit implements Serializable, Dumpable {
 
     /** Return message */
     public String getMessage() { return message; }
+
+
+    /** Get fileBlobs */
+    public TreeMap<String, String> getFileBlobs() { return fileBlobs; }
 
 
     /** Returns the SHA */

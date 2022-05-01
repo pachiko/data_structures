@@ -76,6 +76,18 @@ public class Blob implements Serializable, Dumpable {
     }
 
 
+    /** Merge the contents of two blobs during conflicts */
+    public Blob mergeConflict(Blob b) {
+        String res = "<<<<<<< HEAD\n";
+        if (contents != null) res += contents + "\n";
+        res += "=======\n";
+        if (b.contents != null) res += b.contents + "\n";
+        res += ">>>>>>>\n";
+
+        return new Blob(res);
+    }
+
+
     /** Check duplicate blob */
     public static void checkDuplicate(File f, String sha) {
         if (f.exists()) {

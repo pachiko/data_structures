@@ -79,6 +79,16 @@ public class BranchManager {
     }
 
 
+    /** Updates the HEAD commit with a merged one for the current branch */
+    public static void mergedCommit(Commit merged) {
+        String newSha = merged.write();
+        HEAD = merged;
+        writeContents(join(BRANCH_DIR, branch), newSha);
+        HEAD.incrTracks();
+        merged.updateCWD();
+    }
+
+
     /** Print branches, with an asterisk on the current branch */
     public static void printBranches() {
         System.out.println("=== Branches ===");

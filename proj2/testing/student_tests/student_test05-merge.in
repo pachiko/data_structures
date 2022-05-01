@@ -1,0 +1,51 @@
+# Actual merge test
+I student_test04-merge.inc
++ wug2.txt wug.txt
+> add wug2.txt
+<<<
+> commit "added wug2"
+<<<
+> checkout splitRoot
+<<<
++ wug3.txt wug.txt
+> add wug3.txt
+<<<
+> commit "added wug3"
+<<<
+> merge master
+<<<
+> status
+=== Branches ===
+master
+*splitRoot
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<
+> log
+===
+${COMMIT_HEAD}
+Merged master into splitRoot.
+
+===
+${COMMIT_HEAD}
+added wug3
+
+===
+${COMMIT_HEAD}
+added wug
+
+===
+${COMMIT_HEAD}
+initial commit
+
+<<<*
+= wug.txt wug.txt
+= wug2.txt wug.txt
+= wug3.txt wug.txt

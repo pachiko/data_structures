@@ -292,7 +292,14 @@ public class Repository {
         GitletChecker.checkUntrackedFiles();
         Stager.setupStageArea();
         GitletChecker.checkUncommittedChanges();
+
         SplitPointFinder finder = new SplitPointFinder(mainSHA, mergeSHA, BranchManager.HEAD, merge);
         Commit ancestor = finder.findSplitPoint();
+
+        Commit res = new Commit("Merged " + mergeBranch + " into " + BranchManager.branch + ".",
+                BranchManager.HEAD, merge);
+        Merger merger = new Merger(ancestor, res, merge);
+        merger.merge();
+        BranchManager.mergedCommit(res);
     }
 }

@@ -10,6 +10,7 @@ import java.util.LinkedList;
  *  @author phill
  * */
 public class SplitPointFinder {
+    /** Main and Merge commits */
     public String mainSHA;
     public String mergeSHA;
     public Commit main;
@@ -17,6 +18,7 @@ public class SplitPointFinder {
 
     /** Visited map: SHA -> distance from main */
     private HashMap<String, Integer> visited;
+
     /** Queue of commits */
     private LinkedList<String> queue;
 
@@ -95,6 +97,9 @@ public class SplitPointFinder {
                 ancestor = p;
             } else if (mergeVisited) {
                 ancestor = mp;
+            } else {
+                queue.add(p);
+                if (mp != null) queue.add(mp);
             }
 
             fastForward(ancestor);
