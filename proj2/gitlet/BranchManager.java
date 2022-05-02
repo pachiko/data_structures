@@ -67,8 +67,8 @@ public class BranchManager {
 
 
     /** Updates the HEAD commit with a new one for the current branch */
-    public static void newCommit(String message) {
-        Commit newCommit = new Commit(message, BranchManager.HEAD, null);
+    public static void newCommit(String message, Commit merge) {
+        Commit newCommit = new Commit(message, BranchManager.HEAD, merge);
         newCommit.update(Stager.stageAdds, false);
         newCommit.untrack(Stager.stageRemoves);
 
@@ -76,16 +76,6 @@ public class BranchManager {
         HEAD = newCommit;
         writeContents(join(BRANCH_DIR, branch), newSha);
         HEAD.incrTracks();
-    }
-
-
-    /** Updates the HEAD commit with a merged one for the current branch */
-    public static void mergedCommit(Commit merged) {
-        String newSha = merged.write();
-        HEAD = merged;
-        writeContents(join(BRANCH_DIR, branch), newSha);
-        HEAD.incrTracks();
-        merged.updateCWD();
     }
 
 

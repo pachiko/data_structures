@@ -63,18 +63,30 @@ public class Repository {
     public static void add(String[] args) {
         prepareAdd(args);
         String fileName = args[1];
-        File change = join(CWD, fileName);
+        actualAdd(fileName);
+    }
 
+
+    /** Actual add operation */
+    public static void actualAdd(String fileName) {
+        File change = join(CWD, fileName);
         boolean shouldUnstage = true;
         if (change.exists()) {
             Blob candidate = new Blob(readContentsAsString(change));
             String sha = candidate.write(false, false, null);
-            if (BranchManager.HEAD.stage(fileName, sha)) { // not tracked or diff version
-                Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
-                shouldUnstage = false;
-            }
+            shouldUnstage = actualAdd(fileName, sha);
         }
         if (shouldUnstage) Stager.unstageFile(fileName);
+    }
+
+
+    /** Actual add using Blob SHA */
+    public static boolean actualAdd(String fileName, String sha) {
+        if (BranchManager.HEAD.stage(fileName, sha)) { // not tracked or diff version
+            Stager.addFile(fileName, sha); // Stage changes and removes old untracked blob
+            return false;
+        }
+        return true;
     }
 
 
@@ -97,23 +109,40 @@ public class Repository {
         prepareRemove(args);
         String fileName = args[1];
         GitletChecker.checkValidRemove(fileName);
+        actualRemove(fileName);
+    }
+
+
+    /** Actual remove operation */
+    public static void actualRemove(String fileName) {
         Stager.unstageFile(fileName); // Unstage staged file and deletes untracked blob
         Stager.removeFile(fileName); // Remove from working directory and stage for removal
     }
 
 
-    /** Commits staged changes to current branch */
-    public static void commit(String[] args) {
+    /** Prepare to commit */
+    private static void prepareCommit(String[] args) {
         GitletChecker.checkInvalidGitlet();
         GitletChecker.checkOperands(args.length, 2);
         String message = args[1];
         GitletChecker.checkCommitMessage(message);
-
         BranchManager.loadCurrent();
         Stager.setupStageArea();
-        GitletChecker.checkStagedChanges();
+    }
 
-        BranchManager.newCommit(message);
+
+    /** Commits staged changes to current branch */
+    public static void commit(String[] args) {
+        prepareCommit(args);
+        String message = args[1];
+        actualCommit(message, null);
+    }
+
+
+    /** Actual commit operation */
+    public static void actualCommit(String message, Commit merge) {
+        GitletChecker.checkStagedChanges();
+        BranchManager.newCommit(message, merge);
         Stager.clearStageArea();
     }
 
@@ -198,7 +227,7 @@ public class Repository {
         GitletChecker.checkInvalidGitlet();
         switch (count) {
             case 2 -> BranchManager.checkoutBranch(args[1]); // checkout [branch name]
-            case 3 -> checkoutFile(args[2], null); // checkout -- [file name]
+            case 3 -> checkoutFile(args[2], (String) null); // checkout -- [file name]
             case 4 -> checkoutFile(args[3], args[1]); // checkout [commit id] -- [file name]
             default -> GitletChecker.checkOperands(0, 1);
         }
@@ -213,8 +242,15 @@ public class Repository {
             BranchManager.loadCurrent();
             com = BranchManager.HEAD;
         } else {
-            com = findCommit(commitId);
+            if (commitId.length() == 40) com = Commit.read(commitId);
+            else com = findCommit(commitId);
         }
+
+        checkoutFile(fileName, com);
+    }
+
+    /** Checkout file using Commit object */
+    public static void checkoutFile(String fileName, Commit com) {
         GitletChecker.checkTrackedFile(com, fileName);
 
         String blobSha = com.getBlob(fileName);
@@ -296,10 +332,9 @@ public class Repository {
         SplitPointFinder finder = new SplitPointFinder(mainSHA, mergeSHA, BranchManager.HEAD, merge);
         Commit ancestor = finder.findSplitPoint();
 
-        Commit res = new Commit("Merged " + mergeBranch + " into " + BranchManager.branch + ".",
-                BranchManager.HEAD, merge);
-        Merger merger = new Merger(ancestor, res, merge);
+        Merger merger = new Merger(ancestor, BranchManager.HEAD, merge);
         merger.merge();
-        BranchManager.mergedCommit(res);
+
+        actualCommit("Merged " + mergeBranch + " into " + BranchManager.branch + ".", merge);
     }
 }

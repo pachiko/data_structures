@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static gitlet.Utils.restrictedDelete;
 
 /**
  * Performs a merge using a split point commit and two branches
@@ -16,7 +15,7 @@ public class Merger {
     /** Split point */
     Commit split;
 
-    /** Main commit (merge recipient, MODIFIED IN-PLACE!!) */
+    /** Main commit */
     Commit main;
 
     /** Merge commit */
@@ -31,9 +30,9 @@ public class Merger {
     }
 
 
-    /** TEST */
+    /** Merge. Manipulates staging area. Not responsible for making Commit */
     public void merge() {
-        Map<String, String> mainFiles = main.getFileBlobs(); // MODIFIED IN-PLACE!!
+        Map<String, String> mainFiles = main.getFileBlobs();
         Map<String, String> mergeFiles = merge.getFileBlobs();
         Map<String, String> splitFiles = split.getFileBlobs();
 
@@ -50,9 +49,9 @@ public class Merger {
 
             if (hasPresenceConflict(mergeSplit, mainSplit) || hasContentConflict(mergeSplit, mainSplit, mergeMain)) {
                 hasConflict = true;
-                createConflict(mainSHA, mergeSHA, mainFiles, file);
+                createConflict(mainSHA, mergeSHA, file);
             } else if (hasMergeChanges(mergeSplit, mainSplit)) {
-                mergeChanges(mergeSplit, mainFiles, file);
+                mergeChanges(mergeSplit, file);
             }
         }
 
@@ -88,12 +87,13 @@ public class Merger {
 
 
     /** Create a presence or content conflict for a file */
-    private void createConflict(String mainSHA, String mergeSHA, Map<String, String> mainFiles, String file) {
+    private void createConflict(String mainSHA, String mergeSHA, String file) {
         Blob mainBlob = (mainSHA == null)? new Blob(null) : Blob.read(mainSHA);
         Blob mergeBlob = (mergeSHA == null)? new Blob(null) : Blob.read(mergeSHA);
         Blob resBlob = mainBlob.mergeConflict(mergeBlob);
-        String resSHA = resBlob.write(true, false, null);
-        mainFiles.put(file, resSHA);
+        String sha = resBlob.write(true, false, null);
+        resBlob.putCWD(file);
+        Repository.actualAdd(file, sha);
     }
 
 
@@ -105,12 +105,12 @@ public class Merger {
 
 
     /** Merge changes from merge branch */
-    private void mergeChanges(FileState mergeSplit, Map<String, String> mainFiles, String file) {
+    private void mergeChanges(FileState mergeSplit, String file) {
         if (mergeSplit == FileState.NEW || mergeSplit == FileState.MODIFIED) {
-            mainFiles.put(file, merge.getBlob(file));
+            Repository.checkoutFile(file, merge);
+            Repository.actualAdd(file);
         } else if (mergeSplit == FileState.REMOVED) {
-            mainFiles.remove(file);
-            restrictedDelete(file);
+            Repository.actualRemove(file);
         } else {
             System.out.println("Unknown mergeChange: " + mergeSplit);
         }
