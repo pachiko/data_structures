@@ -35,8 +35,6 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
             announce(); // Update GUI
             if (v == t) { // Return if found
                 targetFound = true;
-            }
-            if (targetFound) {
                 return;
             }
 
