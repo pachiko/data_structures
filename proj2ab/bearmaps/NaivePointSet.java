@@ -1,5 +1,6 @@
 package bearmaps;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NaivePointSet implements PointSet {
@@ -20,6 +21,14 @@ public class NaivePointSet implements PointSet {
                 nearest = dist;
                 res = p;
             }
+        }
+        return res;
+    }
+
+    public List<Point> range(Rect r) {
+        ArrayList<Point> res = new ArrayList<>();
+        for (Point p: pointSet) {
+            if (r.contains(p)) res.add(p);
         }
         return res;
     }

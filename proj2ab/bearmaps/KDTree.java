@@ -56,6 +56,22 @@ public class KDTree implements PointSet, Iterable<Point> {
         return Point.distance(best.p, query) <= n.bound.distance(query);
     }
 
+    public List<Point> range(Rect r) {
+        ArrayList<Point> res = new ArrayList<>();
+        range(r, root, res);
+        return res;
+    }
+
+    private void range(Rect r, KDTreeNode n, List<Point> res) {
+        if (n == null) return;
+        if (r.intersects(n.bound)) {
+            if (r.contains(n.p)) {
+                res.add(n.p);
+            }
+            range(r, n.lesser, res);
+            range(r, n.greater, res);
+        }
+    }
 
     @Override
     public Iterator<Point> iterator() {

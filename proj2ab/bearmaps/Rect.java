@@ -1,5 +1,7 @@
 package bearmaps;
 
+import edu.princeton.cs.algs4.StdDraw;
+
 public class Rect {
     private double xmin;
     private double xmax;
@@ -29,6 +31,11 @@ public class Rect {
         return p.getX() >= xmin && p.getX() <= xmax && p.getY() >= ymin && p.getY() <= ymax;
     }
 
+    public boolean intersects(Rect r) {
+        return r.xmin <= xmax && r.xmax >= xmin &&
+                r.ymin <= ymax && r.ymax >= ymin;
+    }
+
     public double distance(Point p) {
         // See Princeton Algs4
         double dx = 0;
@@ -41,5 +48,12 @@ public class Rect {
         else if (p.getY() > ymax) dy = p.getY() - ymax;
 
         return dx*dx + dy*dy;
+    }
+
+    public void draw() {
+        StdDraw.line(xmin, ymin, xmin, ymax);
+        StdDraw.line(xmax, ymin, xmax, ymax);
+        StdDraw.line(xmin, ymin, xmax, ymin);
+        StdDraw.line(xmin, ymax, xmax, ymax);
     }
 }
