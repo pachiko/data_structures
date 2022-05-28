@@ -1,4 +1,7 @@
 import org.junit.Test;
+
+import java.util.HashMap;
+
 import static org.junit.Assert.*;
 
 /**
@@ -10,10 +13,13 @@ import static org.junit.Assert.*;
 public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     private Node[] contents;
     private int size;
+    private HashMap<T, Integer> indexMap;
     private boolean debugHeap = false;
 
     public ArrayHeap() {
         contents = new ArrayHeap.Node[16];
+
+        indexMap = new HashMap<>();
 
         /* Add a dummy item at the front of the ArrayHeap so that the getLeft,
          * getRight, and parent methods are nicer. */
@@ -76,6 +82,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         Node node2 = getNode(index2);
         contents[index1] = node2;
         contents[index2] = node1;
+        indexMap.put(node1.myItem, index2);
+        indexMap.put(node2.myItem, index1);
     }
 
 
@@ -142,6 +150,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         Node n = new Node(item, priority);
         size++;
         contents[size] = n;
+        indexMap.put(item, size);
         swim(size);
     }
 
@@ -171,6 +180,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         Node min = getNode(1);
         contents[1] = getNode(size);
         contents[size] = null;
+        indexMap.remove(min.myItem);
+        indexMap.put(getNode(1).myItem, 1);
         size--;
         sink(1);
         return min.item();
@@ -195,12 +206,13 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     @Override
     public void changePriority(T item, double priority) {
-        for (Node n: contents) {
-            if (n != null && item.equals(n.item())) {
-                n.myPriority = priority;
-                return;
-            }
-        }
+        int idx = indexMap.get(item);
+        Node n = contents[idx];
+        if (n.myPriority == priority) return;
+        boolean swim = priority < n.myPriority;
+        n.myPriority = priority;
+        if (swim) swim(idx);
+        else sink(idx);
     }
 
     /**
@@ -297,22 +309,14 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Test
     public void testSwim() {
         ArrayHeap<String> pq = new ArrayHeap<>();
-        pq.size = 7;
         for (int i = 1; i <= 7; i += 1) {
-            pq.contents[i] = new ArrayHeap<String>.Node("x" + i, i);
+            pq.insert("x"+i, i);
         }
         // Change item x6's priority to a low value.
         pq.changePriority("x6", 0);
 
         if (debugHeap) {
-            System.out.println("PQ before swimming:");
-            System.out.println(pq);
-        }
-        // Swim x6 upwards. It should reach the root.
-
-        pq.swim(6);
-        if (debugHeap) {
-            System.out.println("PQ after swimming:");
+            System.out.println("PQ after changePriority (low):");
             System.out.println(pq);
         }
         assertEquals("x6", pq.contents[1].myItem);
@@ -327,21 +331,14 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Test
     public void testSink() {
         ArrayHeap<String> pq = new ArrayHeap<>();
-        pq.size = 7;
         for (int i = 1; i <= 7; i += 1) {
-            pq.contents[i] = new ArrayHeap<String>.Node("x" + i, i);
+            pq.insert("x"+i, i);
         }
         // Change root's priority to a large value.
         pq.changePriority("x1", 10);
 
-        if (debugHeap) {
-            System.out.println("PQ before sinking:");
-            System.out.println(pq);
-        }
-        // Sink the root.
-        pq.sink(1);
-        if (debugHeap) {
-            System.out.println("PQ after sinking:");
+         if (debugHeap) {
+            System.out.println("PQ after changePriority:");
             System.out.println(pq);
         }
         assertEquals("x2", pq.contents[1].myItem);
