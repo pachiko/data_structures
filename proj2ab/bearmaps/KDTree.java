@@ -135,10 +135,7 @@ public class KDTree implements PointSet, Iterable<Point> {
 
         @Override
         public int compareTo(Point o) {
-            double diff = (part == Partition.X)? p.getX() - o.getX() : p.getY() - o.getY();
-            if (diff > 0) return 1;
-            else if (diff < 0) return -1;
-            else return 0;
+            return (part == Partition.X)? Double.compare(p.getX(), o.getX()) : Double.compare(p.getY(), o.getY());
         }
     }
 
