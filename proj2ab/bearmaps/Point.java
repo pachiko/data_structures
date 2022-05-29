@@ -19,6 +19,10 @@ public class Point {
         return y;
     }
 
+    public void setX(double x) { this.x = x;}
+
+    public void setY(double y) { this.y = y;}
+
     /**
      * Returns the euclidean distance (L2 norm) squared between two points
      * (x1, y1) and (x2, y2). Note: This is the square of the Euclidean distance,

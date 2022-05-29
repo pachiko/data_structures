@@ -2,12 +2,11 @@ package bearmaps;
 
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
+public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T>, Iterable<T> {
     Node[] items;
     private int size;
     private HashMap<T, Integer> indexMap;
@@ -149,6 +148,34 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
        } else {
            throw new NoSuchElementException();
        }
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new PQIterator(items, size);
+    }
+
+    // Level-Order Traversal
+    private class PQIterator implements Iterator {
+        Node[] items;
+        int size;
+        int idx;
+
+        public PQIterator(Node[] items, int size) {
+            this.items = items;
+            this.size = size;
+            this.idx = 1;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return idx <= size;
+        }
+
+        @Override
+        public Object next() {
+            return items[idx++].item;
+        }
     }
 
     class Node implements Comparable<Node> {

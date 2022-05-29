@@ -1,5 +1,6 @@
 package bearmaps;
 
+
 import java.util.*;
 
 public class KDTree implements PointSet, Iterable<Point> {
@@ -27,6 +28,44 @@ public class KDTree implements PointSet, Iterable<Point> {
             root = n;
             root.bound = new Rect(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         }
+    }
+
+    public Iterable<Point> nearest(double x, double y, int k) {
+        Point pt = new Point(x, y);
+        KDTreeNode n = root;
+        ArrayHeapMinPQ<Point> pq = new ArrayHeapMinPQ<>();
+        nearest(n, pt, pq, k);
+        return pq;
+    }
+
+    private void nearest(KDTreeNode n, Point query, ArrayHeapMinPQ<Point> pq, int k) {
+        double dist = -Point.distance(n.p, query);  // Actually a max PQ
+        if (pq.size() < k) { // less than k nearest-neighbors
+            pq.add(n.p, dist);
+        } else { // Compare with furthest, replcae it if nearer
+            Point furthestPt = pq.getSmallest();
+            double furthest = -Point.distance(furthestPt, query);
+            if (furthest > dist) {
+                pq.removeSmallest();
+                pq.add(n.p, dist);
+            }
+        }
+
+        KDTreeNode better = (n.compareTo(query) < 0)? n.greater : n.lesser;
+        KDTreeNode worse = (better == n.greater)? n.lesser : n.greater;
+
+        if (better != null) nearest(better, query, pq, k);
+
+        if (worse != null && !pruneSubTree(worse, query, pq)) {
+            nearest(worse, query, pq, k);
+        }
+    }
+
+    private boolean pruneSubTree(KDTreeNode n, Point query, ArrayHeapMinPQ<Point> pq) {
+        Point furthestPt = pq.getSmallest();
+        double furthest = -Point.distance(furthestPt, query);
+        double dist = -Point.distance(n.p, query);
+        return furthest <= dist; // No need to recurse if Node is NOT nearer than furthest
     }
 
     public Point nearest(double x, double y) {
@@ -77,7 +116,6 @@ public class KDTree implements PointSet, Iterable<Point> {
     public Iterator<Point> iterator() {
         return new KDTreeIterator(root);
     }
-
 
     // Level-Order Traversal
     private class KDTreeIterator implements Iterator {
