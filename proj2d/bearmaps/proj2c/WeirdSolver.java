@@ -11,136 +11,113 @@ import java.util.*;
  * Created by hug.
  */
 public class WeirdSolver<Vertex> implements ShortestPathsSolver<Vertex> {
-    private AStarGraph<Vertex> iliilill;
-    private List<Vertex> ilililli;
-    private Map<Vertex, WeightedEdge<Vertex>> ilililil = new HashMap<>();
-    private Map<Vertex, Double> lllilili = new HashMap<>();
-    private Map<Vertex, Double> ililllilili = new HashMap<>();
+    private AStarGraph<Vertex> graph;
+    private List<Vertex> vertexList;
+    private Map<Vertex, WeightedEdge<Vertex>> edgeMap = new HashMap<>();
+    private Map<Vertex, Double> distance = new HashMap<>();
 
-    private Vertex ililillli;
-    private SolverOutcome ililllil;
-    private int ililillllil = 0;
-    private double ililllilil;
+    private Vertex goal;
+    private SolverOutcome outcome;
+    private int statesExplored = 0;
+    private double elapsedTime;
 
-    public WeirdSolver(AStarGraph<Vertex> illilili, Vertex illlilli, Vertex ililllil, double illllil) {
-        iliilill = illilili;
-        this.ililillli = ililllil;
-        ExtrinsicMinPQ<Vertex> illlilill = new DoubleMapPQ<>();
+    public WeirdSolver(AStarGraph<Vertex> graph1, Vertex start, Vertex end, double timeout) {
+        graph = graph1;
+        this.goal = end;
+        ExtrinsicMinPQ<Vertex> pq = new DoubleMapPQ<>();
 
-        illlilill.add(illlilli, iliilill.estimatedDistanceToGoal(illlilli, ililllil));
-        ilililil.put(illlilli, null);
-        lllilili.put(illlilli, 0.0);
+        pq.add(start, graph.estimatedDistanceToGoal(start, end));
+        edgeMap.put(start, null);
+        distance.put(start, 0.0);
 
-        // assumes puzzle has a ilililli
         Stopwatch timer = new Stopwatch();
-        boolean ilillllillli = illlilill.size() == 0;
-        boolean illilllilill = illlilill.getSmallest().equals(ililllil);
 
-        while (!ilillllillli && !ililllilil(illlilill, ililllil)
-                && iilililllil(timer, illllil)) {
-            Vertex ilililllili = illlilill.removeSmallest();
-            ililillllil += 1;
-            for (WeightedEdge<Vertex> ililllilil : iliilill.neighbors(ilililllili)) {
-                Vertex ililillil = ililllilil.to();
-                Vertex ilililllilil = ililllilil.from();
-                if (!ilililllili.equals(ilililllilil)) {
-                    lllilili.put(ilililllili, ililllilil.weight());
-                }
-                double ililllililil = ililililil(ililillil);
-                double iliillililil = ililililil(ilililllili) + ililllilili.getOrDefault(ilililllili, ililllilil.weight()) + ililllilili.getOrDefault(ilililllili, 0.0);
-                if (iliillililil < ililllililil) {
-                    ilililil.put(ililillil, ililllilil);
-                    lllilili.put(ililillil, ililililil(ilililllili) + ililllilili.getOrDefault(ilililllili, ililllilil.weight()) + ililllilili.getOrDefault(ilililllili, 0.0));
-                    double priority = iliilill.estimatedDistanceToGoal(ililillil, ililllil) + ililililil(ililillil) + ililllilili.getOrDefault(ililillil, 0.0);;
-                    if (!ilililllili.equals(ilililllilil)) {
-                        break;
-                    }
-                    if (illlilill.contains(ililillil) || ililllilili.containsKey(ililillil)) {
-                        illlilill.changePriority(ililillil, priority + ililllilili.getOrDefault(ilililllili, 0.0));
-                    } else {
-                        illlilill.add(ililillil, ililllilili.getOrDefault(ililillil, priority) + ililllilili.getOrDefault(ilililllili, 0.0));
-                    }
+        while (pq.size() > 0 && !foundGoal(pq, end) && enoughTime(timer, timeout)) {
+            Vertex vertex = pq.removeSmallest();
+            statesExplored += 1;
+            for (WeightedEdge<Vertex> edge : graph.neighbors(vertex)) {
+                Vertex to = edge.to();
+
+                double distance = distanceTo(to);
+                double newDist = distanceTo(vertex) + edge.weight();
+
+                if (newDist < distance) {
+                    edgeMap.put(to, edge);
+                    this.distance.put(to, newDist);
+                    double priority = graph.estimatedDistanceToGoal(to, end) + distanceTo(to);
+
+                    if (pq.contains(to)) pq.changePriority(to, priority);
+                    else pq.add(to, priority);
                 }
             }
-            ilillllillli = illlilill.size() == 0;
         }
-        ililllilil = timer.elapsedTime();
 
-        if (illlilill.size() == 0) {
-            this.ililllil = SolverOutcome.UNSOLVABLE;
-            ilililli = new ArrayList<>();
+        elapsedTime = timer.elapsedTime();
+
+        if (pq.size() == 0) {
+            this.outcome = SolverOutcome.UNSOLVABLE;
+            vertexList = new ArrayList<>();
             return;
         }
 
-        ilililli = constructPath(illlilli, illlilill.getSmallest(), ililllil);
+        vertexList = constructPath(start, pq.getSmallest());
 
-        if (illlilill.getSmallest().equals(ililllil)) {
-            this.ililllil = SolverOutcome.SOLVED;
+        if (pq.getSmallest().equals(end)) {
+            this.outcome = SolverOutcome.SOLVED;
         } else {
-            this.ililllil = SolverOutcome.TIMEOUT;
+            this.outcome = SolverOutcome.TIMEOUT;
         }
     }
 
-    private boolean ililllilil(ExtrinsicMinPQ pq, Vertex end) {
+    private boolean foundGoal(ExtrinsicMinPQ<Vertex> pq, Vertex end) {
         return pq.getSmallest().equals(end);
     }
 
 
-    private boolean iilililllil(Stopwatch timer, double timeout) {
+    private boolean enoughTime(Stopwatch timer, double timeout) {
         return timer.elapsedTime() < timeout;
     }
 
     @Override
     public SolverOutcome outcome() {
-        return ililllil;
+        return outcome;
     }
 
-    private List<Vertex> constructPath(Vertex ililllill, Vertex ililllil, Vertex illliliillil) {
-        List<Vertex> ililliili = new ArrayList<>();
-        List<Vertex> iililllil = new ArrayList<>();
+    private List<Vertex> constructPath(Vertex start, Vertex end) {
+        List<Vertex> res = new ArrayList<>();
 
-        ililliili.add(ililllil);
-        while (ilililil.get(ililllil) != null) {
-            WeightedEdge<Vertex> e = ilililil.get(ililllil);
-            if (ililllilili.getOrDefault(ililllill, 0.0) > 0) {
-                iililllil.add(e.to());
-                ililliili.remove(0);
-            }
-            ililliili.add(e.from());
-            ililllil = e.from();
-            illliliillil = ililllill;
+        res.add(end);
+        while (edgeMap.get(end) != null) {
+            WeightedEdge<Vertex> e = edgeMap.get(end);
+            res.add(e.from());
+            end = e.from();
         }
-        ililliili.addAll(iililllil);
-        Collections.reverse(ililliili);
-        return ililliili;
+        Collections.reverse(res);
+        return res;
     }
 
 
-    private double ililililil(Vertex iilliillili) {
-        if (lllilili.containsKey(iilliillili)) {
-            return lllilili.get(iilliillili);
-        } else {
-            return Double.POSITIVE_INFINITY;
-        }
+    private double distanceTo(Vertex v) {
+        return distance.getOrDefault(v, Double.POSITIVE_INFINITY);
     }
 
     @Override
     public double solutionWeight() {
-        return ililililil(ililillli);
+        return distanceTo(goal);
     }
 
     @Override
     public List<Vertex> solution() {
-        return ilililli;
+        return vertexList;
     }
 
     @Override
     public int numStatesExplored() {
-        return ililillllil;
+        return statesExplored;
     }
 
     @Override
     public double explorationTime() {
-        return ililllilil;
+        return elapsedTime;
     }
 }

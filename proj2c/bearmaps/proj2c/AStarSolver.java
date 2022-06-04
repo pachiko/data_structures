@@ -6,7 +6,6 @@ import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.LinkedList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
@@ -28,7 +27,6 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
         HashMap<Vertex, Double> distance = new HashMap<>();
         distance.put(start, 0.);
         HashMap<Vertex, Vertex> jump = new HashMap<>();
-        HashSet<Vertex> visited = new HashSet<>();
 
         while (pq.size() > 0 && time.elapsedTime() < timeout && outcome != SolverOutcome.SOLVED) {
             Vertex v = pq.removeSmallest();
@@ -36,10 +34,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
                 outcome = SolverOutcome.SOLVED;
                 break;
             }
-
-            if (visited.contains(v)) continue;
             numStatesExplored++;
-            visited.add(v);
 
             List<WeightedEdge<Vertex>> vn = input.neighbors(v);
             for (WeightedEdge<Vertex> e : vn) {
