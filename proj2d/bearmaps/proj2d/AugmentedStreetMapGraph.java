@@ -1,6 +1,8 @@
 package bearmaps.proj2d;
 
+import bearmaps.proj2ab.KDTree;
 import bearmaps.proj2ab.Point;
+import bearmaps.proj2ab.PointSet;
 import bearmaps.proj2ab.WeirdPointSet;
 import bearmaps.proj2c.streetmap.StreetMapGraph;
 import bearmaps.proj2c.streetmap.Node;
@@ -15,7 +17,7 @@ import java.util.*;
  * @author Alan Yao, Josh Hug, ________
  */
 public class AugmentedStreetMapGraph extends StreetMapGraph {
-    WeirdPointSet tree;
+    PointSet tree;
     HashMap<Point, Long> pointToNode;
 
     public AugmentedStreetMapGraph(String dbPath) {
@@ -30,7 +32,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
             pts.add(p);
             pointToNode.put(p, n.id());
         }
-        tree = new WeirdPointSet(pts);
+        tree = new KDTree(pts);
     }
 
 
