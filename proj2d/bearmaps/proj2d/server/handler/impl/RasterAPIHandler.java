@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bearmaps.proj2d.utils.Constants.SEMANTIC_STREET_GRAPH;
-import static bearmaps.proj2d.utils.Constants.ROUTE_LIST;
+import static bearmaps.proj2d.utils.Constants.*;
 
 /**
  * Handles requests from the web browser for map images. These images
@@ -84,11 +83,62 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+
+        double w = requestParams.get("w");
+        double h = requestParams.get("h");
+        double ullat = requestParams.get("ullat");
+        double ullon = requestParams.get("ullon");
+        double lrlat = requestParams.get("lrlat");
+        double lrlon = requestParams.get("lrlon");
+
+        if (lrlon < ullon || ullat < lrlat || w < 1. || h < 1. ||
+                ullat < ROOT_LRLAT || lrlat > ROOT_ULLAT || lrlon < ROOT_ULLON || ullon > ROOT_LRLON)
+            return queryFail();
+
+        double requestLonDPP = (lrlon - ullon)/w;
+        double rootLonDPP = (ROOT_LRLON - ROOT_ULLON)/TILE_SIZE;
+        int depth = (int) Math.ceil(Math.log(rootLonDPP/requestLonDPP)/Math.log(2));
+        depth = Math.max(0, Math.min(depth, 7));
+        results.put("depth", depth);
+
+        double spacingX = (ROOT_LRLON - ROOT_ULLON)/Math.pow(2, depth);
+        double lx = Math.max(Math.floor((ullon - ROOT_ULLON)/spacingX)*spacingX + ROOT_ULLON, ROOT_ULLON);
+        double ux = Math.min(Math.ceil((lrlon - ROOT_ULLON)/spacingX)*spacingX + ROOT_ULLON, ROOT_LRLON);
+
+        double spacingY = (ROOT_ULLAT - ROOT_LRLAT)/Math.pow(2, depth);
+        double ly = Math.max(Math.floor((lrlat- ROOT_LRLAT)/spacingY)*spacingY + ROOT_LRLAT, ROOT_LRLAT);
+        double uy = Math.min(Math.ceil((ullat - ROOT_LRLAT)/spacingY)*spacingY + ROOT_LRLAT, ROOT_ULLAT);
+
+        results.put("raster_ul_lon", lx);
+        results.put("raster_ul_lat", uy);
+        results.put("raster_lr_lon", ux);
+        results.put("raster_lr_lat", ly);
+
+        int maxI = (int) (Math.pow(2, depth) - 1);
+        String[][] grids;
+        if (maxI <= 0) {
+            grids = new String[][]{{"d0_x0_y0.png"}};
+        } else {
+            int ilx = (int) Math.max(Math.floor((ullon - ROOT_ULLON)/spacingX), 0);
+            int iux = (int) Math.min(Math.floor((lrlon - ROOT_ULLON)/spacingX), maxI);
+            int ily = (int) Math.min(Math.floor((ROOT_ULLAT - lrlat)/spacingY), maxI);
+            int iuy = (int) Math.max(Math.floor((ROOT_ULLAT - ullat)/spacingY), 0);
+
+            int numRow = ily - iuy + 1;
+            int numCol = iux - ilx + 1;
+            grids = new String[numRow][numCol];
+            for (int r = 0; r < numRow; r++) {
+                int y = iuy + r;
+                for (int c = 0; c < numCol; c++) {
+                    int x = ilx + c;
+                    grids[r][c] = "d" + depth + "_" + "x" + x + "_" + "y" + y + ".png";
+                }
+            }
+        }
+
+        results.put("render_grid", grids);
+        results.put("query_success", true);
         return results;
     }
 
