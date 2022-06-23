@@ -3,7 +3,6 @@ package bearmaps.proj2d;
 import bearmaps.proj2ab.KDTree;
 import bearmaps.proj2ab.Point;
 import bearmaps.proj2ab.PointSet;
-import bearmaps.proj2ab.WeirdPointSet;
 import bearmaps.proj2c.streetmap.StreetMapGraph;
 import bearmaps.proj2c.streetmap.Node;
 
@@ -19,6 +18,7 @@ import java.util.*;
 public class AugmentedStreetMapGraph extends StreetMapGraph {
     PointSet tree;
     HashMap<Point, Long> pointToNode;
+    MyTrieMap<Node> trie;
 
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
@@ -26,11 +26,16 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
         List<Node> nodes = this.getNodes();
         ArrayList<Point> pts = new ArrayList<>(nodes.size());
         pointToNode = new HashMap<>(nodes.size());
+        trie = new MyTrieMap<>();
 
         for (Node n: nodes) {
             Point p = new Point(n.lon(), n.lat());
             pts.add(p);
             pointToNode.put(p, n.id());
+            String name = n.name();
+            if (name != null) {
+                trie.add(cleanString(name), n);
+            }
         }
         tree = new KDTree(pts);
     }
@@ -58,7 +63,13 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * cleaned <code>prefix</code>.
      */
     public List<String> getLocationsByPrefix(String prefix) {
-        return new LinkedList<>();
+        String clean = cleanString(prefix);
+        List<Node> found = trie.valuesWithPrefix(clean);
+        ArrayList<String> res = new ArrayList<>(found.size());
+        for (Node n: found) {
+            res.add(n.name());
+        }
+        return res;
     }
 
     /**
@@ -75,7 +86,18 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * "id" -> Number, The id of the node. <br>
      */
     public List<Map<String, Object>> getLocations(String locationName) {
-        return new LinkedList<>();
+        String clean = cleanString(locationName);
+        List<Node> found = trie.get(clean);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (Node n : found) {
+            HashMap<String, Object> nodeInfo = new HashMap<>();
+            nodeInfo.put("lat", n.lat());
+            nodeInfo.put("lon", n.lon());
+            nodeInfo.put("name", n.name());
+            nodeInfo.put("id", n.id());
+            res.add(nodeInfo);
+        }
+        return res;
     }
 
 
