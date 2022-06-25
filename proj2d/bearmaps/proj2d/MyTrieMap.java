@@ -40,6 +40,7 @@ public class MyTrieMap<T> implements TrieMap61B<T> {
             prev = newNode;
         }
         prev.isKey = true;
+        if (prev.values == null) prev.values = new ArrayList<>();
         prev.values.add(value);
     }
 
@@ -104,7 +105,6 @@ public class MyTrieMap<T> implements TrieMap61B<T> {
         public TrieNode() {
             mapping = new HashMap<>();
             isKey = false;
-            values = new ArrayList<>();
         }
     }
 }
