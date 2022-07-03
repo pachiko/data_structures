@@ -2,6 +2,8 @@ package bearmaps;
 
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.util.Objects;
+
 public class Rect {
     private double xmin;
     private double xmax;
@@ -32,8 +34,7 @@ public class Rect {
     }
 
     public boolean intersects(Rect r) {
-        return r.xmin <= xmax && r.xmax >= xmin &&
-                r.ymin <= ymax && r.ymax >= ymin;
+        return r.xmin <= xmax && r.xmax >= xmin && r.ymin <= ymax && r.ymax >= ymin;
     }
 
     public double distance(Point p) {
@@ -48,6 +49,26 @@ public class Rect {
         else if (p.getY() > ymax) dy = p.getY() - ymax;
 
         return dx*dx + dy*dy;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
+        Rect otherRect = (Rect) other;
+        return Double.compare(otherRect.xmin, xmin) == 0 &&
+                Double.compare(otherRect.xmax, xmax) == 0 &&
+                Double.compare(otherRect.ymin, ymin) == 0 &&
+                Double.compare(otherRect.ymax, ymax) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(xmin, xmax, ymin, ymax);
     }
 
     public void draw() {

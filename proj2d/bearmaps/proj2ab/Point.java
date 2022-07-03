@@ -12,13 +12,9 @@ public class Point {
         this.y = y;
     }
 
-    public double getX() {
-        return x;
-    }
+    public double getX() { return x; }
 
-    public double getY() {
-        return y;
-    }
+    public double getY() { return y; }
 
     /**
      * Returns the great-circle (haversine) distance between geographic coordinates
@@ -51,17 +47,23 @@ public class Point {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Point point = (Point) o;
-        return Double.compare(point.x, x) == 0 &&
-                Double.compare(point.y, y) == 0;
+        return Double.compare(point.x, x) == 0 && Double.compare(point.y, y) == 0;
     }
 
     @Override
     public int hashCode() {
+//        return Double.hashCode(x) ^ Double.hashCode(y); // SAME HASH if swap x, y
         return Objects.hash(x, y);
     }
 
     @Override
     public String toString() {
         return String.format("Point x: %.10f, y: %.10f", x, y);
+    }
+
+    public static void main(String[] args) {
+        Point p1 = new Point(1, 2);
+        Point p2 = new Point(2, 1);
+        System.out.println(p1.hashCode() == p2.hashCode());
     }
 }

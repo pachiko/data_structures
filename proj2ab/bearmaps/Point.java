@@ -2,6 +2,8 @@ package bearmaps;
 
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.util.Objects;
+
 public class Point {
     private double x;
     private double y;
@@ -11,17 +13,13 @@ public class Point {
         this.y = y;
     }
 
-    public double getX() {
-        return x;
-    }
+    public double getX() { return x; }
 
-    public double getY() {
-        return y;
-    }
+    public double getY() { return y; }
 
-    public void setX(double x) { this.x = x;}
+    public void setX(double x) { this.x = x; }
 
-    public void setY(double y) { this.y = y;}
+    public void setY(double y) { this.y = y; }
 
     /**
      * Returns the euclidean distance (L2 norm) squared between two points
@@ -59,11 +57,18 @@ public class Point {
 
     @Override
     public int hashCode() {
-        return Double.hashCode(x) ^ Double.hashCode(y);
+        //        return Double.hashCode(x) ^ Double.hashCode(y); // SAME HASH if swap x, y
+        return Objects.hash(x, y);
     }
 
     @Override
     public String toString() {
         return String.format("Point x: %.10f, y: %.10f", x, y);
+    }
+
+    public static void main(String[] args) {
+        Point p1 = new Point(1, 2);
+        Point p2 = new Point(2, 1);
+        System.out.println(p1.hashCode() == p2.hashCode());
     }
 }
