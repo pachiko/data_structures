@@ -1,5 +1,5 @@
 package byow.lab12;
-import org.antlr.v4.runtime.misc.Pair;
+import byow.Core.PointI;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
@@ -16,7 +16,6 @@ public class HexWorld {
     private static final int HEIGHT = 50;
 
     private static final Random RANDOM = new Random();
-    private static TETile currentTile;
 
     /**
      * Picks a RANDOM tile with a 33% change of being
@@ -36,28 +35,28 @@ public class HexWorld {
     /**
      * Shifts a tile's center to the top-right
      */
-    private static Pair<Integer, Integer> shiftTopRight(int x, int y, int hexSize) {
-        int newX = x + (2*hexSize - 1);
-        int newY = y + hexSize;
-        return new Pair<>(newX, newY);
+    private static PointI shiftTopRight(PointI p, int hexSize) {
+        int newX = p.getX() + (2*hexSize - 1);
+        int newY = p.getY() + hexSize;
+        return new PointI(newX, newY);
     }
 
     /**
      * Shifts a tile's center to the top-left
      */
-    private static Pair<Integer, Integer> shiftTopLeft(int x, int y, int hexSize) {
-        int newX = x - (2*hexSize - 1);
-        int newY = y + hexSize;
-        return new Pair<>(newX, newY);
+    private static PointI shiftTopLeft(PointI p, int hexSize) {
+        int newX = p.getX() - (2*hexSize - 1);
+        int newY = p.getY() + hexSize;
+        return new PointI(newX, newY);
     }
 
     /**
      * Shifts a tile's center to the bottom-right
      */
-    private static Pair<Integer, Integer> shiftBotRight(int x, int y, int hexSize) {
-        int newX = x + (2*hexSize - 1);
-        int newY = y - hexSize;
-        return new Pair<>(newX, newY);
+    private static PointI shiftBotRight(PointI p, int hexSize) {
+        int newX = p.getX() + (2*hexSize - 1);
+        int newY = p.getY() - hexSize;
+        return new PointI(newX, newY);
     }
 
     /**
@@ -69,45 +68,45 @@ public class HexWorld {
         // Base: start from bottom-left.
         int bx = hexSize + 1;
         int by = hexSize;
+        PointI base = new PointI(bx, by);
 
-        HashSet<Pair<Integer, Integer>> visited = new HashSet<>();
-        tileHexagonHelper(res, bx, by, hexSize, visited);
+        HashSet<PointI> visited = new HashSet<>();
+        tileHexagonHelper(res, base, hexSize, visited);
     }
 
     /**
      * Tile hexagons recursively.
      */
-    private static void tileHexagonHelper(TETile[][] res, int x, int y, int hexSize, HashSet<Pair<Integer, Integer>> visited) {
-        if (!checkHexagon(x, y, hexSize)) return;
-        Pair<Integer, Integer> p = new Pair<>(x, y);
+    private static void tileHexagonHelper(TETile[][] res, PointI p, int hexSize, HashSet<PointI> visited) {
+        if (!checkHexagon(p, hexSize)) return;
         if (visited.contains(p)) return;
 
-        generateHexagon(res, x, y, hexSize);
+        generateHexagon(res, p, hexSize);
         visited.add(p);
 
-        Pair<Integer, Integer> topLeft = shiftTopLeft(x, y, hexSize);
-        tileHexagonHelper(res, topLeft.a, topLeft.b, hexSize, visited);
-        Pair<Integer, Integer> topRight = shiftTopRight(x, y, hexSize);
-        tileHexagonHelper(res, topRight.a, topRight.b, hexSize, visited);
-        Pair<Integer, Integer> botRight = shiftBotRight(x, y, hexSize);
-        tileHexagonHelper(res, botRight.a, botRight.b, hexSize, visited);
+        PointI topLeft = shiftTopLeft(p, hexSize);
+        tileHexagonHelper(res, topLeft, hexSize, visited);
+        PointI topRight = shiftTopRight(p, hexSize);
+        tileHexagonHelper(res, topRight, hexSize, visited);
+        PointI botRight = shiftBotRight(p, hexSize);
+        tileHexagonHelper(res, botRight, hexSize, visited);
     }
 
     /**
      * Check if hexagon can be drawn
      */
-    private static boolean checkHexagon(int x, int y, int hexSize) {
-        int left = x - hexSize;
+    private static boolean checkHexagon(PointI p, int hexSize) {
+        int left = p.getX() - hexSize;
         if (hexSize %2 == 0) left -= 1;
         if (!checkX(left)) return false;
 
-        int right = x + hexSize;
+        int right = p.getX() + hexSize;
         if (!checkX(right)) return false;
 
-        int top = y + hexSize - 1;
+        int top = p.getY() + hexSize - 1;
         if (!checkY(top)) return false;
 
-        int bottom = y - hexSize;
+        int bottom = p.getY() - hexSize;
         return checkY(bottom);
     }
 
@@ -120,19 +119,21 @@ public class HexWorld {
     /**
      * Generate a single hexagon at the location (x, y)
      */
-    private static void generateHexagon(TETile[][] res, int x, int y, Integer hexSize) {
-        if (!checkHexagon(x, y, hexSize)) return;
+    private static void generateHexagon(TETile[][] res, PointI p, Integer hexSize) {
+        if (!checkHexagon(p, hexSize)) return;
 
-        currentTile = randomTile();
+        TETile currentTile = randomTile();
 
         if (hexSize == null) hexSize = RANDOM.nextInt( 5) + 1; // 2 to 5
         // draw top and bottom rows (length = hexSize)
         // towards center, +2 size each time
 
+        int x = p.getX();
+        int y = p.getY();
         int count = 0;
         while (count < hexSize) {
-            drawSingleRow(res, hexSize + 2*count, x, y + hexSize - count - 1); // top
-            drawSingleRow(res, hexSize + 2*count, x, y + count - hexSize); // bottom
+            drawSingleRow(res, hexSize + 2*count, x, y + hexSize - count - 1, currentTile); // top
+            drawSingleRow(res, hexSize + 2*count, x, y + count - hexSize, currentTile); // bottom
             count++;
         }
     }
@@ -140,7 +141,7 @@ public class HexWorld {
     /**
      * Helper to draw a row of a hexagon
      */
-    private static void drawSingleRow(TETile[][] res, int size, int x, int y) {
+    private static void drawSingleRow(TETile[][] res, int size, int x, int y, TETile currentTile) {
         boolean even = (size%2 == 0);
         for (int c = -size/2; even ? c < size/2 : c <= size/2; c++) {
             int xc = x + c;
