@@ -1,11 +1,10 @@
 package byow.Core;
 
+import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
 public class Engine {
-    TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
 
@@ -46,7 +45,19 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
+        InputParser parser = new InputParser();
+        StringInputDevice src = new StringInputDevice(input);
+        GameArg mode = parser.parseFirst(src); // FIXME: handle other ways to get world (load etc)
+        long seed = parser.parseSeed(src);
+        Phase1WorldGen gen = new Phase1WorldGen();
+        return gen.generateNewWorld(WIDTH, HEIGHT, seed);
+    }
+
+    public static void main(String[] args) {
+        Engine e = new Engine();
+        TETile[][] res = e.interactWithInputString("N69420S");
+        TERenderer render = new TERenderer();
+        render.initialize(WIDTH, HEIGHT);
+        render.renderFrame(res);
     }
 }
