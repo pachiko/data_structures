@@ -3,9 +3,10 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Interior {
+public class Interior implements Serializable {
     boolean isRoom;
     RectI rect;
     HashMap<Direction, HashSet<Interior>> connections;
@@ -101,6 +102,20 @@ public class Interior {
         connections.put(dir, neighbors);
     }
 
+    public static void disconnect(Interior a, Interior b) {
+        a.disconnect(b);
+        b.disconnect(a);
+    }
+
+    public void disconnect(Interior other) {
+        if (connections != null) {
+            for (Map.Entry<Direction, HashSet<Interior>> entry : connections.entrySet()) {
+                HashSet<Interior> hs = entry.getValue();
+                hs.remove(other);
+            }
+        }
+    }
+
     /**
      * Draw.
      */
@@ -112,10 +127,10 @@ public class Interior {
     /**
      * Draw interior.
      */
-    private void drawInterior(TETile[][] currentWorld) {
+    public void drawInterior(TETile[][] currentWorld) {
         for (int i = rect.xmin(); i <= rect.xmax(); i++) {
             for (int j = rect.ymin(); j <= rect.ymax(); j++) {
-                if (isEdge(i, j)) {
+                if (rect.isEdge(i, j)) {
                     currentWorld[i][j] = Tileset.WALL;
                 } else {
                     currentWorld[i][j] = Tileset.FLOOR;
@@ -125,16 +140,9 @@ public class Interior {
     }
 
     /**
-     * Is point along an edge?
-     */
-    private boolean isEdge(int x, int y) {
-       return x == rect.xmin() || x == rect.xmax() || y == rect.ymin() || y == rect.ymax();
-    }
-
-    /**
      * Draw connected areas as floors instead of walls.
      */
-    private void drawConnections(TETile[][] currentWorld) {
+    public void drawConnections(TETile[][] currentWorld) {
         if (connections != null) {
             for (Map.Entry<Direction, HashSet<Interior>> entry : connections.entrySet()) {
                 for (Interior neighbor : entry.getValue()) {
@@ -142,7 +150,7 @@ public class Interior {
 
                     for (int i = overlap.xmin(); i <= overlap.xmax(); i++) {
                         for (int j = overlap.ymin(); j <= overlap.ymax(); j++) {
-                            if (isCorner(i, j, rect) || isCorner(i, j, neighbor.rect)) {
+                            if (rect.isCorner(i, j) || neighbor.rect.isCorner(i, j)) {
                                 continue;
                             }
                             currentWorld[i][j] = Tileset.FLOOR;
@@ -151,13 +159,5 @@ public class Interior {
                 }
             }
         }
-    }
-
-    /**
-     * Is point a corner?
-     */
-    private boolean isCorner(int x, int y, RectI rect) {
-        return (x == rect.xmin() && (y == rect.ymin() || y == rect.ymax()))
-                || (x == rect.xmax() && (y == rect.ymin() || y == rect.ymax()));
     }
 }

@@ -1,17 +1,23 @@
 package byow.Core;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *  @source Princeton Algs4
  */
-public class PointI {
+public class PointI implements Serializable {
     private int x;
     private int y;
 
     public PointI(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public PointI(PointI p) {
+        this.x = p.x;
+        this.y = p.y;
     }
 
     public int getX() { return x; }

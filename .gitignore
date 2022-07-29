@@ -381,6 +381,7 @@ tramp
 !proj3/**/*.mp4
 !proj3/**/*.gif
 !proj3/**/*.wav
+proj3/**/*.txt
 
 # Project Repo Image/Audio/Video Files
 !byow/**/*.png

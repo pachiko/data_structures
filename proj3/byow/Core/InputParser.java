@@ -1,51 +1,105 @@
 package byow.Core;
 
 import byow.InputDemo.InputSource;
-import byow.InputDemo.StringInputDevice;
+import byow.InputDemo.StringInputSource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InputParser {
+    Character prevChar = null;
+
     public GameArg parseFirst(InputSource src) {
         if (src.possibleNextInput()) {
             char c = src.getNextKey();
+            prevChar = c;
             return gameArgLookup(c);
         }
         return GameArg.Unknown;
     }
 
-    public long parseSeed(InputSource src) {
+    public long parseSeed(InputSource src, Engine e) {
         StringBuilder ss = new StringBuilder();
 
         while (src.possibleNextInput()) {
             char c = src.getNextKey();
-            GameArg ga = gameArgLookup(c);
+            if (c == '\u0000') continue; // Default char, so continue
 
-            if (!Character.isDigit(c) && ga == GameArg.Unknown) return 0;
+            prevChar = c;
+            GameArg ga = gameArgLookup(c);
+            if (!Character.isDigit(c) && ga != GameArg.Seed) return -1;
             else if (ga == GameArg.Seed) break;
 
             ss.append(c);
+            if (e != null) e.displaySeed(ss.toString());
         }
 
         return Long.parseLong(ss.toString());
     }
 
+    public List<Direction> parseMovement(InputSource src, Engine e) {
+        ArrayList<Direction> moves = new ArrayList<>();
+
+        while (src.possibleNextInput()) {
+            if (e != null) e.displayMouseInfo(); // Always show mouse-info in HUD
+
+            char c = src.getNextKey();
+            if (c == '\u0000') continue; // Default char, so continue
+
+            prevChar = c;
+            Direction d = Direction.movement(c);
+            if (d == Direction.Unknown) break;
+
+            moves.add(d);
+            if (e != null) e.updateWorld(moves);
+        }
+
+        return moves;
+    }
+
+    public boolean parseSave(InputSource src) {
+        boolean hasColon = prevChar == ':';
+
+        while (src.possibleNextInput()) {
+            char c = src.getNextKey();
+            if (c == '\u0000') continue; // Default char, so continue
+
+            GameArg ga = gameArgLookup(c);
+            if (c == ':' && !hasColon) {
+                hasColon = true;
+            } else if (ga == GameArg.QuitGame && hasColon) {
+                return true;
+            } else {
+                break;
+            }
+        }
+
+        return false;
+    }
+
     public GameArg gameArgLookup(char c) {
         c = Character.toLowerCase(c);
-        switch (c) {
-            case 'n': return GameArg.NewGame;
-            case 'l': return GameArg.LoadGame;
-            case 'q': return GameArg.QuitGame; // FIXME: :q ??
-            case 's' : return GameArg.Seed;
-            default : return GameArg.Unknown;
-        }
+        return switch (c) {
+            case 'n' -> GameArg.NewGame;
+            case 'l' -> GameArg.LoadGame;
+            case 'q' -> GameArg.QuitGame;
+            case 's' -> GameArg.Seed;
+            default -> GameArg.Unknown;
+        };
     }
 
     public static void main(String[] args) {
         InputParser parser = new InputParser();
-        StringInputDevice src = new StringInputDevice("N69420s");
+        StringInputSource src = new StringInputSource("N69420s:q");
         GameArg mode = parser.parseFirst(src);
-        long seed = parser.parseSeed(src);
+        long seed = parser.parseSeed(src, null);
+        List<Direction> moves = parser.parseMovement(src, null);
+        boolean save = parser.parseSave(src);
+
         System.out.println("Mode: " + mode);
         System.out.println("Seed: " + seed);
+        System.out.println("Moves: " + moves);
+        System.out.println("Save: " + save);
     }
 }
 

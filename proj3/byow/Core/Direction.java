@@ -9,6 +9,16 @@ public enum Direction  {
     East,
     West;
 
+    public static Direction movement(char c) {
+        return switch (Character.toLowerCase(c)) {
+            case 'w' -> North;
+            case 's' -> South;
+            case 'a' -> West;
+            case 'd' -> East;
+            default -> Unknown;
+        };
+    }
+
     public static Direction opposite(Direction d) {
         return switch (d) {
             case North -> South;

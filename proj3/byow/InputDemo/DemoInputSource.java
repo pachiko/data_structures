@@ -20,7 +20,7 @@ public class DemoInputSource {
         } else if (inputType == RANDOM) {
             inputSource = new RandomInputSource(50L);
         } else { // inputType == STRING
-            inputSource = new StringInputDevice("HELLO MY FRIEND. QUACK QUACK");
+            inputSource = new StringInputSource("HELLO MY FRIEND. QUACK QUACK");
         }
 
         int totalCharacters = 0;

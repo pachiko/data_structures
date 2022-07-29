@@ -1,11 +1,12 @@
 package byow.Core;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *  @source Princeton Algs4
  */
-public class RectI {
+public class RectI implements Serializable {
     private int xmin;
     private int ymin;
     private int xmax;
@@ -50,6 +51,14 @@ public class RectI {
 
     public boolean intersects(RectI r) {
         return r.xmin <= xmax && r.xmax >= xmin && r.ymin <= ymax && r.ymax >= ymin;
+    }
+
+    public boolean isCorner(int x, int y) {
+        return (x == xmin && (y == ymin || y == ymax)) || (x == xmax && (y == ymin || y == ymax));
+    }
+
+    public boolean isEdge(int x, int y) {
+        return x == xmin || x == xmax || y == ymin || y == ymax;
     }
 
     public RectI overlap(RectI r) {
