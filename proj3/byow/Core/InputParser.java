@@ -47,6 +47,13 @@ public class InputParser {
     }
 
     /**
+     * Parse toggle of low-visiblity mode
+     */
+    public boolean parseLowVis(char c) {
+        return Character.toLowerCase(c) == 'v';
+    }
+
+    /**
      * Parse movement
      */
     public List<Direction> parseMovement(InputSource src, Engine e) {
@@ -63,7 +70,11 @@ public class InputParser {
 
             prevChar = c;
             Direction d = Direction.movement(c);
-            if (d == Direction.Unknown) break;
+            boolean lowVis = parseLowVis(c);
+            if (lowVis && e != null) {
+                e.toggleLowVis();
+                continue;
+            } else if (d == Direction.Unknown) break;
 
             moves.add(d);
             if (e != null) e.updateWorld(d);

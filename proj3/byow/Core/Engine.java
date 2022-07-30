@@ -34,6 +34,16 @@ public class Engine {
     private Player player;
     private TERenderer render = null;
 
+    private boolean lowVisMode = true;
+    private static final int lowVisR = 2;
+
+    /**
+     * Toggle low-visibility mode.
+     */
+    public void toggleLowVis() {
+        lowVisMode = !lowVisMode;
+    }
+
     /**
      * Init renderer.
      */
@@ -83,7 +93,29 @@ public class Engine {
     public void drawWorld() {
         world.drawWorld();
         player.draw(world.currentWorld);
+        hideWorld();
         render.renderFrame(world.currentWorld);
+    }
+
+    /**
+     * Hide world
+     */
+    public void hideWorld() {
+        if (lowVisMode) {
+            int px = player.pos.getX();
+            int py = player.pos.getY();
+
+            RectI vis = new RectI(px - lowVisR, py - lowVisR, px + lowVisR, py + lowVisR);
+
+            int w = world.worldDims.w();
+            int h = world.worldDims.h();
+
+            for (int x = 0; x < w; x += 1) {
+                for (int y = 0; y < h; y += 1) {
+                    if (!vis.contains(new PointI(x, y))) world.currentWorld[x][y] = Tileset.NOTHING;
+                }
+            }
+        }
     }
 
     /**
