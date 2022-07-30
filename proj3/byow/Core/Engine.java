@@ -15,6 +15,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
 
+
+/**
+ * Game Engine.
+ */
 public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
@@ -30,11 +34,17 @@ public class Engine {
     private Player player;
     private TERenderer render = null;
 
+    /**
+     * Init renderer.
+     */
     public void initializeRender() {
         render = new TERenderer();
         render.initialize(WIDTH, HEIGHT);
     }
 
+    /**
+     * Display main menu.
+     */
     public void displayMainMenu() {
         StdDraw.setPenColor(Color.white);
         StdDraw.setFont(bigFont);
@@ -45,6 +55,9 @@ public class Engine {
         StdDraw.show();
     }
 
+    /**
+     * Display seed as it's typed.
+     */
     public void displaySeed(String seed) {
         StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.white);
@@ -53,6 +66,9 @@ public class Engine {
         StdDraw.show();
     }
 
+    /**
+     * Display Goodbye message
+     */
     public void displayGoodbye() {
         StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.white);
@@ -61,21 +77,26 @@ public class Engine {
         StdDraw.show();
     }
 
+    /**
+     * Draw world
+     */
     public void drawWorld() {
         world.drawWorld();
         player.draw(world.currentWorld);
         render.renderFrame(world.currentWorld);
     }
 
-    public void updateWorld(List<Direction> moves) {
-        if (moves != null && !moves.isEmpty()) {
-            Direction d = moves.get(moves.size() - 1);
-            player.move(d);
-        }
+    /**
+     * Update player after move
+     */
+    public void updateWorld(Direction move) {
+        player.move(move);
     }
 
+    /**
+     * Display mouse info on HUD. Also renders world
+     */
     public void displayMouseInfo() {
-        drawWorld();
         double x = StdDraw.mouseX();
         double y = StdDraw.mouseY();
         if (y >= HUD) return;
@@ -164,6 +185,9 @@ public class Engine {
         return world.currentWorld;
     }
 
+    /**
+     * New game
+     */
     public void newGame(InputParser parser, InputSource src, boolean display) {
         if (display) displaySeed("");
         long seed = parser.parseSeed(src, display ? this : null);
@@ -177,6 +201,9 @@ public class Engine {
         player.spawn(world.rooms, rng);
     }
 
+    /**
+     * Load game
+     */
     public void loadGame() {
         if (!saveFile.exists()) return;
         GameIO.GameState gs = GameIO.read(saveFile);
@@ -185,12 +212,18 @@ public class Engine {
         player = gs.player;
     }
 
+    /**
+     * Save game
+     */
     public void saveGame() {
         if (world != null && player != null) {
             GameIO.write(saveFile, world, player);
         }
     }
 
+    /**
+     * Main Sanity Check
+     */
     public static void main(String[] args) {
         Engine e = new Engine();
         e.interactWithKeyboard();

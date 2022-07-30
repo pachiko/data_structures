@@ -6,9 +6,15 @@ import byow.InputDemo.StringInputSource;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Input parser.
+ */
 public class InputParser {
     Character prevChar = null;
 
+    /**
+     * Parse first argument/game mode
+     */
     public GameArg parseFirst(InputSource src) {
         if (src.possibleNextInput()) {
             char c = src.getNextKey();
@@ -18,6 +24,9 @@ public class InputParser {
         return GameArg.Unknown;
     }
 
+    /**
+     * Parse seed for new game
+     */
     public long parseSeed(InputSource src, Engine e) {
         StringBuilder ss = new StringBuilder();
 
@@ -37,11 +46,17 @@ public class InputParser {
         return Long.parseLong(ss.toString());
     }
 
+    /**
+     * Parse movement
+     */
     public List<Direction> parseMovement(InputSource src, Engine e) {
         ArrayList<Direction> moves = new ArrayList<>();
 
         while (src.possibleNextInput()) {
-            if (e != null) e.displayMouseInfo(); // Always show mouse-info in HUD
+            if (e != null) {
+                e.drawWorld();
+                e.displayMouseInfo(); // Always show mouse-info in HUD
+            }
 
             char c = src.getNextKey();
             if (c == '\u0000') continue; // Default char, so continue
@@ -51,12 +66,15 @@ public class InputParser {
             if (d == Direction.Unknown) break;
 
             moves.add(d);
-            if (e != null) e.updateWorld(moves);
+            if (e != null) e.updateWorld(d);
         }
 
         return moves;
     }
 
+    /**
+     * Parse whether to save or not
+     */
     public boolean parseSave(InputSource src) {
         boolean hasColon = prevChar == ':';
 
@@ -77,6 +95,9 @@ public class InputParser {
         return false;
     }
 
+    /**
+     * Game argument look up
+     */
     public GameArg gameArgLookup(char c) {
         c = Character.toLowerCase(c);
         return switch (c) {
@@ -88,6 +109,9 @@ public class InputParser {
         };
     }
 
+    /**
+     * Main sanity check
+     */
     public static void main(String[] args) {
         InputParser parser = new InputParser();
         StringInputSource src = new StringInputSource("N69420s:q");

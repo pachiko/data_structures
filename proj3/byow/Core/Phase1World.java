@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * World.
+ */
 public class Phase1World implements Serializable {
     transient TETile[][] currentWorld;
     RectI worldDims;
@@ -22,6 +25,9 @@ public class Phase1World implements Serializable {
     transient private TERenderer ter = null;
     transient private boolean debugMode = false;
 
+    /**
+     * Init tiles matrix of world
+     */
     private void initWorld() {
         int w = worldDims.w();
         int h = worldDims.h();
@@ -57,9 +63,7 @@ public class Phase1World implements Serializable {
         worldDims = new RectI(0, 0, w - 1, h - 1);
         initRandomWorld();
         if (debugMode) ter.initialize(w, h);
-
-        PointI start = randomWorldPos();
-        generateInterior(start, Direction.Unknown);
+        generateInterior();
         drawWorld();
     }
 
@@ -86,10 +90,13 @@ public class Phase1World implements Serializable {
     /**
      * Generate interiors using a point p and a direction d.
      */
-    private void generateInterior(PointI p, Direction d) {
-        Interior room = Interior.newInterior(rng, p, d, true);
-
+    private void generateInterior() {
+        Interior room;
         rooms = new ArrayList<>();
+
+        do {
+            room = Interior.newInterior(rng, randomWorldPos(), Direction.Unknown, true);
+        } while(!validate(room));
         rooms.add(room);
 
         int fail = 0;
@@ -113,6 +120,9 @@ public class Phase1World implements Serializable {
         }
     }
 
+    /**
+     * Render the world's tiles
+     */
     public void drawWorld() {
         initWorld();
         for (Interior interior : rooms) {
@@ -121,11 +131,17 @@ public class Phase1World implements Serializable {
         }
     }
 
+    /**
+     * Debug mode to visualize world.
+     */
     private void setDebugMode() {
         debugMode = true;
         ter = new TERenderer();
     }
 
+    /**
+     * Main sanity check.
+     */
     public static void main(String[] args) {
         Phase1World w = new Phase1World();
         w.setDebugMode();

@@ -6,11 +6,17 @@ import byow.TileEngine.Tileset;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Interior. Either a room or a hallway
+ */
 public class Interior implements Serializable {
     boolean isRoom;
     RectI rect;
     HashMap<Direction, HashSet<Interior>> connections;
 
+    /**
+     * Ctor
+     */
     public Interior(PointI p, int w, int h, boolean isRoom) {
         this.isRoom = isRoom;
         this.rect = new RectI(p, w, h);

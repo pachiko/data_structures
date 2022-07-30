@@ -3,7 +3,13 @@ package byow.Core;
 import java.io.*;
 import java.nio.file.Files;
 
+/**
+ * Game IO. Saves or loads game files
+ */
 public class GameIO {
+    /**
+     * Serialize game data
+     */
     private static byte[] serialize(Phase1World w, Player p) {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -18,6 +24,9 @@ public class GameIO {
         return null;
     }
 
+    /**
+     * Write game data
+     */
     public static void write(File file, Phase1World w, Player p) {
         byte[] res = serialize(w, p);
         if (res == null) return;
@@ -34,6 +43,9 @@ public class GameIO {
         }
     }
 
+    /**
+     * Read game data
+     */
     public static GameState read(File file) {
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
@@ -46,7 +58,10 @@ public class GameIO {
         }
     }
 
-    // A static nested class may be instantiated without instantiating its outer class.
+    /**
+     * Game state.
+     * A static nested class may be instantiated without instantiating its outer class.
+     */
     static class GameState implements Serializable {
         Phase1World world;
         Player player;
