@@ -5,6 +5,7 @@ import byow.InputDemo.KeyboardInputSource;
 import byow.InputDemo.StringInputSource;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
@@ -17,16 +18,26 @@ import java.util.Random;
 public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
+    static final int HUD = (int) (9.*HEIGHT/10.);
+    static final double HUDTEXT = 9.5*HEIGHT/10.;
 
     static final File CWD = new File(System.getProperty("user.dir"));
     static final File saveFile = Paths.get(CWD.getPath(), "BYoWGameState.txt").toFile();
+    static final Font bigFont = new Font("Monaco", Font.BOLD, 30);
+    static final Font mediumFont = new Font("Monaco", Font.BOLD, 20);
 
     private Phase1World world;
     private Player player;
     private TERenderer render = null;
 
+    public void initializeRender() {
+        render = new TERenderer();
+        render.initialize(WIDTH, HEIGHT);
+    }
+
     public void displayMainMenu() {
         StdDraw.setPenColor(Color.white);
+        StdDraw.setFont(bigFont);
         StdDraw.text(WIDTH/2., 9.*HEIGHT/10.,"BYoW Game");
         StdDraw.text(WIDTH/2., 7.*HEIGHT/10.,"New Game (n)");
         StdDraw.text(WIDTH/2., 5.*HEIGHT/10.,"Load Game (l)");
@@ -37,6 +48,7 @@ public class Engine {
     public void displaySeed(String seed) {
         StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.white);
+        StdDraw.setFont(bigFont);
         StdDraw.text(WIDTH/2., HEIGHT/2.,"Seed: " + seed);
         StdDraw.show();
     }
@@ -44,8 +56,15 @@ public class Engine {
     public void displayGoodbye() {
         StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.white);
+        StdDraw.setFont(bigFont);
         StdDraw.text(WIDTH/2., HEIGHT/2.,"Thank you for playing, see you again!");
         StdDraw.show();
+    }
+
+    public void drawWorld() {
+        world.drawWorld();
+        player.draw(world.currentWorld);
+        render.renderFrame(world.currentWorld);
     }
 
     public void updateWorld(List<Direction> moves) {
@@ -53,15 +72,19 @@ public class Engine {
             Direction d = moves.get(moves.size() - 1);
             player.move(d);
         }
-        world.drawWorld();
-        player.draw(world.currentWorld);
-        render.renderFrame(world.currentWorld);
     }
 
     public void displayMouseInfo() {
+        drawWorld();
         double x = StdDraw.mouseX();
         double y = StdDraw.mouseY();
-        System.out.println("MouseInfo: (" + x + ", " + y + ")");
+        if (y >= HUD) return;
+        TETile pointed = world.currentWorld[(int) x][(int) y];
+        if (pointed == Tileset.NOTHING) return;
+        StdDraw.setFont(mediumFont);
+        StdDraw.setPenColor(Color.white);
+        StdDraw.text(WIDTH/2., HUDTEXT, pointed.description());
+        StdDraw.show();
     }
 
     /**
@@ -69,9 +92,7 @@ public class Engine {
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
-        render = new TERenderer();
-        render.initialize(WIDTH, HEIGHT);
-
+        initializeRender();
         displayMainMenu();
         KeyboardInputSource src = new KeyboardInputSource();
         InputParser parser = new InputParser();
@@ -90,7 +111,7 @@ public class Engine {
         }
 
 	    if (world == null || player == null) return;
-        updateWorld(null);
+        drawWorld();
 
         do {
             parser.parseMovement(src, this);
@@ -150,7 +171,7 @@ public class Engine {
         Random rng = new Random(seed);
 
         world = new Phase1World();
-        world.generateNewWorld(WIDTH, HEIGHT, rng);
+        world.generateNewWorld(WIDTH, HUD, rng);
 
         player = new Player();
         player.spawn(world.rooms, rng);

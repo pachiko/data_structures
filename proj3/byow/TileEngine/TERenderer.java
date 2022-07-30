@@ -13,6 +13,7 @@ import java.awt.Font;
  */
 public class TERenderer {
     private static final int TILE_SIZE = 16;
+    private static final Font tileFont = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
     private int width;
     private int height;
     private int xOffset;
@@ -33,12 +34,11 @@ public class TERenderer {
         this.xOffset = xOff;
         this.yOffset = yOff;
         StdDraw.setCanvasSize(width * TILE_SIZE, height * TILE_SIZE);
-        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
-        StdDraw.setFont(font);      
+        StdDraw.setFont(tileFont);
         StdDraw.setXscale(0, width);
         StdDraw.setYscale(0, height);
 
-        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.clear(Color.BLACK);
 
         StdDraw.enableDoubleBuffering();
         StdDraw.show();
@@ -86,7 +86,8 @@ public class TERenderer {
     public void renderFrame(TETile[][] world) {
         int numXTiles = world.length;
         int numYTiles = world[0].length;
-        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setFont(tileFont);
         for (int x = 0; x < numXTiles; x += 1) {
             for (int y = 0; y < numYTiles; y += 1) {
                 if (world[x][y] == null) {
