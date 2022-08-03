@@ -118,6 +118,8 @@ public class RadixSort {
             if (c < min) min = c;
             if (c > max) max = c;
         }
+
+        if (max == min && max == -1) return;
         int range = max - min + 1;
         if (debugRadix) System.out.println("Max: " + max + "; " + "Min: " + min + "; " + "Range: " + range);
 
@@ -160,6 +162,7 @@ public class RadixSort {
 
     public static void main(String[] args) {
         String[] asciis = {"dd", "abc", "aaa", "azn"};
+//        String[] asciis = {"aaa", "aaa", "aaa"};
         String[] sorted = sort(asciis);
         System.out.println("Sorted: " + Arrays.toString(sorted));
     }
