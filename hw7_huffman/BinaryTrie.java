@@ -1,29 +1,27 @@
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 public class BinaryTrie implements Serializable {
     private TrieNode root;
 
     public BinaryTrie(Map<Character, Integer> frequencyTable) {
-        LinkedList<TrieNode> nodes = new LinkedList<>();
+        PriorityQueue<TrieNode> nodes = new PriorityQueue<>();
         for (Map.Entry<Character, Integer> entry : frequencyTable.entrySet()) {
             nodes.add(new TrieNode(entry.getValue(), entry.getKey()));
         }
-        nodes.sort(null);
         root = mergeNodes(nodes);
     }
 
-    private TrieNode mergeNodes(LinkedList<TrieNode> nodes) {
+    private TrieNode mergeNodes(PriorityQueue<TrieNode> nodes) {
         while (!nodes.isEmpty()) {
-            TrieNode least = nodes.pollFirst();
-            TrieNode second = nodes.pollFirst();
+            TrieNode least = nodes.poll();
+            TrieNode second = nodes.poll();
             if (second == null) return least;
 
             TrieNode parent = new TrieNode(new TrieNode[]{least, second});
             nodes.add(parent);
-            nodes.sort(null);
         }
         return null;
     }
