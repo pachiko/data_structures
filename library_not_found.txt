@@ -1,0 +1,17 @@
+For some reason, the Maven Local Repository path in IntelliJ is absolute rather than relative.
+This causes the JAR files from CS61B to be missing.
+(Not really missing, but they are re-downloaded to the old path but there is no masterpom.xml to index them)
+
+So, we need to change the path in .idea/workspace.xml
+
+<component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="localRepository"
+
+Run this Bash shell command on root folder:
+find . -type f -name "workspace.xml" -exec sed -i -- 's#A:\\skeleton-sp21\\library-sp21\\javalib#A:\\LEARN\\Implementations\\Foundation\\data_structures\\library-sp21\\javalib#g' {} +
+
+Note the single-quotes on the replacement string.
+Also note that the separator doesn't have to be s/A/B/g, can also use s;A;B;g or any other delimiter not found in the string
+{} +  is for find ... -exec ... to run the exec command for all files found
